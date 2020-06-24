@@ -1,0 +1,9 @@
+# Only use Cray-procured packages
+--trusted-host dst.us.cray.com
+--index-url http://dst.us.cray.com/dstpiprepo/simple
+-c constraints.txt
+
+requests
+kubernetes
+ims-python-helper
+requests_oauthlib
