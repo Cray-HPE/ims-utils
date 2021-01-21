@@ -1,0 +1,10 @@
+# Cray Image Management Service build environment sshd configuration
+Port 22
+LogLevel INFO
+PermitRootLogin yes
+PubkeyAuthentication yes
+AuthorizedKeysFile    /etc/cray/ims/authorized_keys
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+Subsystem sftp internal-sftp
+
