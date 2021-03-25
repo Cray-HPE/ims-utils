@@ -1,6 +1,6 @@
 ## Cray Image Management Service image build environment utilities Dockerfile
-## Copyright 2018-2020, Cray Inc.
-FROM dtr.dev.cray.com/baseos/alpine:3.11.5
+# Copyright 2018-2021 Hewlett Packard Enterprise Development LP
+FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.12.4
 
 # Add utilities that are required for this command
 WORKDIR /
@@ -12,6 +12,7 @@ RUN apk update \
             squashfs-tools \
             tar \
             python3 \
+            py3-pip \
         && pip3 install --upgrade pip \
             --trusted-host dst.us.cray.com \
             --index-url http://dst.us.cray.com/piprepo/simple \
