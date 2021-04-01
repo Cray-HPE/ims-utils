@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-# Copyright 2019-2020, Cray Inc.
+# Copyright 2019-2021 Hewlett Packard Enterprise Development LP
 # Author: Eric Cozzi
 
 import os
@@ -8,7 +8,7 @@ import subprocess
 import errno
 
 RPM_NAME = "cray_ca_cert"
-RPM_VERSION = "1.0.0"
+RPM_VERSION = "1.0.1"
 
 ETC_CRAY_CA_DIR = "etc/cray/ca"
 CERTIFICATE_AUTHORITY_NAME = "certificate_authority.crt"
