@@ -38,7 +38,7 @@ An example of using this container (as an `initContainer`) is provided below.
 
 ```
       initContainers:
-      - image: dtr.dev.cray.com:443/jdeveloper/ims-utils:dev
+      - image: dtr.dev.cray.com:443/cray/ims-utils:1.1.2
         name: fetch-recipe
         env:
         - name: API_GATEWAY_HOSTNAME
