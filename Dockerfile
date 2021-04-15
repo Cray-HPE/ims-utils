@@ -13,6 +13,9 @@ RUN apk update \
             tar \
             python3 \
             py3-pip \
+            gcc \
+            python3-dev \
+            libc-dev \
         && pip3 install --upgrade pip \
             --trusted-host dst.us.cray.com \
             --index-url http://dst.us.cray.com/piprepo/simple \
