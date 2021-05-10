@@ -2,10 +2,10 @@
 # Copyright 2019-2021 Hewlett Packard Enterprise Development LP
 # Author: Eric Cozzi
 
+import errno
 import os
 import shutil
 import subprocess
-import errno
 
 RPM_NAME = "cray_ca_cert"
 RPM_VERSION = "1.0.1"
@@ -25,7 +25,6 @@ SPECFILE_SOURCE_FILE = os.path.join("/mnt/specfile/", SPECFILE_NAME)
 
 
 def main():
-
     os.chdir(os.path.expanduser("~"))
 
     # Create SOURCE archive root and sub directories
@@ -60,7 +59,8 @@ def main():
     shutil.copyfile(SPECFILE_SOURCE_FILE, os.path.join(RPM_BUILD_ROOT, "SPECS", SPECFILE_NAME))
 
     subprocess.check_call(["rpmbuild", "-bb", os.path.join(RPM_BUILD_ROOT, "SPECS", SPECFILE_NAME)])
-    shutil.copyfile(os.path.join(RPM_BUILD_ROOT, "RPMS", "x86_64", "cray_ca_cert-1.0.0-1.x86_64.rpm"), "/mnt/ca-rpm/cray_ca_cert-1.0.0-1.x86_64.rpm")
+    shutil.copyfile(os.path.join(RPM_BUILD_ROOT, "RPMS", "x86_64", f"cray_ca_cert-{RPM_VERSION}-1.x86_64.rpm"),
+                    f"/mnt/ca-rpm/cray_ca_cert-{RPM_VERSION}-1.x86_64.rpm")
 
 
 if __name__ == "__main__":
