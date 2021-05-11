@@ -38,12 +38,13 @@
 # |  2. Remove SIGNAL_FILE_COMPLETE            |         |                                            |
 # |     and SIGNAL_FILE_EXITING flags          |         |                                            |
 # |     if they exist.                         |         |                                            |
-# |  3. Touch SIGNAL_FILE_READY +-------------------------> 4. Wait for @SIGNAL_FILE_READY            |
+# |  3. Touch SIGNAL_FILE_READY +-------------------------> 4. Wait for $SIGNAL_FILE_READY            |
 # |                                            |         |  5. Start SSHD daemon using config <---------+ User accesses SSH environment
 # |                                            |         |     files in /etc/cray/ims shared          |
 # |                                            |         |     volume (see $SSHD_OPTIONS)             |
 # |                                            |         |  6. Wait for user to touch  <----------------+ User touches SIGNAL_FILE_COMPLETE file
-# |                                            |         |     $SIGNAL_FILE_COMPLETE                  |
+# |                                            |         |     $SIGNAL_FILE_COMPLETE or               |
+# |                                            |         |     $SIGNAL_FILE_FAILED                    |
 # |                                            |         |  7. Start orderly shutdown of SSH          |
 # |                                            |         |     Container                              |
 # |                                            |         |     a) Remove SIGNAL_FILE_COMPLETE file    |
@@ -64,6 +65,7 @@ IMAGE_ROOT_PARENT=$1
 SIGNAL_FILE_READY=$IMAGE_ROOT_PARENT/ready
 SIGNAL_FILE_COMPLETE=$IMAGE_ROOT_PARENT/complete
 SIGNAL_FILE_EXITING=$IMAGE_ROOT_PARENT/exiting
+SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/failed
 
 PARAMETER_FILE_BUILD_FAILED=$IMAGE_ROOT_PARENT/build_failed
 
@@ -93,6 +95,7 @@ setup_user_shell() {
     if [ "$SSH_JAIL" = "True" ]
     then
         SIGNAL_FILE_COMPLETE=$IMAGE_ROOT_PARENT/image-root/tmp/complete
+        SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/image-root/tmp/failed
     fi
 
     # Make sure that the signal file doesn't exist yet
@@ -103,6 +106,13 @@ setup_user_shell() {
     fi
 
     # Make sure that the signal file doesn't exist yet
+    if [ -f "$SIGNAL_FILE_FAILED" ]
+    then
+        echo "Found $SIGNAL_FILE_FAILED. Removing."
+        rm "$SIGNAL_FILE_FAILED"
+    fi
+
+    # Make sure that the signal file doesn't exist yet
     if [ -f "$SIGNAL_FILE_EXITING" ]
     then
         echo "Found $SIGNAL_FILE_EXITING. Removing."
@@ -110,12 +120,13 @@ setup_user_shell() {
     fi
 
     # Give user instructions on how to exit this script
-    echo "Image customization build environment is ready."
-    echo "Use the following command to signal that image customization is complete in this container:"
-    echo "EXIT_COMMAND='touch $SIGNAL_FILE_COMPLETE'"
+    echo "IMS SSH shell environment is ready."
+    echo "To mark this shell as successful, touch the file \"$SIGNAL_FILE_COMPLETE\"."
+    echo "To mark this shell as failed, touch the file \"$SIGNAL_FILE_FAILED\"."
+    echo "Waiting for User to mark this shell as either successful or failed."
     echo ""
 
-    # Signal that the buildenv is ready and enter wait loop for $SIGNAL_FILE_COMPLETE to show up
+    # Signal that the buildenv is ready and enter wait loop
     touch "$SIGNAL_FILE_READY"
 
     # Sleep for changing the status in case the buildenv is still sleeping in the wait_for_ready loop
@@ -166,7 +177,7 @@ restore_resolv() {
 case "$IMS_ACTION" in
     create)
         if [ -f "$PARAMETER_FILE_BUILD_FAILED" ]; then
-            if [[ `echo $ENABLE_DEBUG | tr [:upper:] [:lower:]` = "true" ]]; then
+            if [[ $(echo "$ENABLE_DEBUG" | tr [:upper:] [:lower:]) = "true" ]]; then
                 echo "Running user shell for failed create action"
                 setup_user_shell
             else
@@ -196,10 +207,15 @@ case "$IMS_ACTION" in
         setup_user_shell
         restore_resolv "$IMAGE_ROOT_PARENT/image-root"
 
-        # Package the image and send it back to the artifact repository
-        IMAGE_ROOT_DIR=$IMAGE_ROOT_PARENT/image-root /scripts/package_and_upload.sh
-        fail_if_error "Packaging and uploading image customize artifacts"
-        set_job_status "success"
+        if [ -f "$SIGNAL_FILE_FAILED" ]; then
+            echo "Customization of image root marked as failed. A new IMS image will not be created."
+            set_job_status "error"
+        else
+            # Package the image and send it back to the artifact repository
+            IMAGE_ROOT_DIR=$IMAGE_ROOT_PARENT/image-root /scripts/package_and_upload.sh
+            fail_if_error "Packaging and uploading image customize artifacts"
+            set_job_status "success"
+        fi
         ;;
      *)
         echo "Unknown IMS Action: $IMS_ACTION. Not running user shell."
