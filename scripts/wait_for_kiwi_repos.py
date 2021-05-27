@@ -23,13 +23,14 @@
 # (MIT License)
 
 import logging
-import oauthlib.oauth2
 import os
-import requests
-import requests_oauthlib
 import sys
 import time
 import xml.etree.ElementTree as ET
+
+import oauthlib.oauth2
+import requests
+import requests_oauthlib
 from ims_python_helper import ImsHelper
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -71,7 +72,7 @@ def _set_ims_job_status(ims_job_id, ims_url, session):
             )._ims_job_patch_job_status(ims_job_id, IMS_JOB_STATUS)
             LOGGER.info("Result of setting job status: %s", result)
     except requests.exceptions.HTTPError as exc:
-        LOGGER.warn("Error setting job status %s" % exc)
+        LOGGER.warning("Error setting job status %s" % exc)
 
 
 def log_request(resp, *args, **kwargs):
@@ -113,8 +114,8 @@ def _create_session(ssl_cert):
 
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     if not ssl_cert:
-        LOGGER.warn("Warning: Unverified HTTPS request is being made. Use CA_CERT environment variable "
-                    "to add certificate verification.")
+        LOGGER.warning("Warning: Unverified HTTPS request is being made. Use CA_CERT environment variable "
+                       "to add certificate verification.")
 
     return session
 
@@ -194,7 +195,7 @@ def is_repo_available(session, repo_url, timeout):
         LOGGER.info("{} response getting {}".format(response.status_code, repo_md_xml))
         return True
     except requests.exceptions.RequestException as err:
-        LOGGER.warn(err)
+        LOGGER.warning(err)
         if hasattr(err, "response") and hasattr(err.response, "text"):
             LOGGER.debug(err.response.text)
     return False
@@ -219,13 +220,18 @@ def _wait_for_kiwi_ng_repos(recipe_root, session, timeout):
     if not os.path.isfile(config_xml_file):
         sys.exit("%s does not exist." % config_xml_file)
 
-    # introspect the recipe and look for any defined repos
-    root = ET.parse(config_xml_file).getroot()
-    repos = [type_tag.get('path') for type_tag in root.findall('repository/source')
-             if type_tag is not None and type_tag.get('path') and
-             type_tag.get('path').lower().startswith(('http://', 'https://'))]
+    try:
+        # introspect the recipe and look for any defined repos
+        root = ET.parse(config_xml_file).getroot()
+        repos = [type_tag.get('path') for type_tag in root.findall('repository/source')
+                 if type_tag is not None and type_tag.get('path') and
+                 type_tag.get('path').lower().startswith(('http://', 'https://'))]
 
-    _wait_for_repos(repos, session, timeout)
+        _wait_for_repos(repos, session, timeout)
+    except ET.ParseError as xml_err:
+        LOGGER.error('Failed to parse config.xml to determine repo URLs. %s', xml_err)
+        return 1
+    return 0
 
 
 def main():
@@ -241,8 +247,7 @@ def main():
 
     _setup_logging()
     _set_ims_job_status(ims_job_id, ims_url, _create_oauth_session(ca_cert))
-    _wait_for_kiwi_ng_repos(recipe_root, _create_session(ca_cert), timeout)
-    return 0
+    return _wait_for_kiwi_ng_repos(recipe_root, _create_session(ca_cert), timeout)
 
 
 if __name__ == "__main__":
