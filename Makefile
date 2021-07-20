@@ -20,7 +20,7 @@
 #
 # (MIT License)
 
-NAME ?= ims-utils
+NAME ?= cray-ims-utils
 export VERSION ?= $(shell cat .version)-local
 export DOCKER_IMAGE ?= ${NAME}:${VERSION}
 
