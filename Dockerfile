@@ -37,8 +37,6 @@ RUN apk update \
             python3-dev \
             libc-dev \
         && pip3 install --upgrade pip \
-            --trusted-host dst.us.cray.com \
-            --index-url http://dst.us.cray.com/piprepo/simple \
         && pip3 install \
            --no-cache-dir \
            -r requirements.txt \
