@@ -20,7 +20,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # (MIT License)
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13.5
+FROM artifactory.algol60.net/docker.io/alpine:3.13.5
 
 # Add utilities that are required for this command
 WORKDIR /
