@@ -20,7 +20,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # (MIT License)
-FROM artifactory.algol60.net/docker.io/alpine:3.12.4
+FROM artifactory.algol60.net/docker.io/alpine:3.12.4 as base
 
 # Add utilities that are required for this command
 WORKDIR /
