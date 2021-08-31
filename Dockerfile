@@ -20,12 +20,13 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # (MIT License)
-FROM artifactory.algol60.net/docker.io/alpine:3.12.4 as base
+FROM artifactory.algol60.net/docker.io/alpine:3.12 as base
 
 # Add utilities that are required for this command
 WORKDIR /
 COPY requirements.txt constraints.txt /
-RUN apk update \
+RUN apk add --upgrade --no-cache apk-tools \
+		&& apk update \
         && apk add --update --no-cache \
             curl \
             rpm \
@@ -36,6 +37,7 @@ RUN apk update \
             gcc \
             python3-dev \
             libc-dev \
+        && apk -U upgrade --no-cache \
         && pip3 install --upgrade pip \
         && pip3 install \
            --no-cache-dir \
@@ -44,7 +46,7 @@ RUN apk update \
            /var/cache/apk/* \
            /root/.cache \
            /tmp/* \
-       && mkdir -p \
+        && mkdir -p \
            /scripts \
            /config
 
