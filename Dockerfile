@@ -38,17 +38,26 @@ RUN apk add --upgrade --no-cache apk-tools \
             python3-dev \
             libc-dev \
         && apk -U upgrade --no-cache \
-        && pip3 install --upgrade pip \
-        && pip3 install \
-           --no-cache-dir \
-           -r requirements.txt \
         &&  rm -rf \
            /var/cache/apk/* \
            /root/.cache \
            /tmp/* \
         && mkdir -p \
            /scripts \
-           /config
+           /config \
+         && chown -Rv 65534:65534 \
+           /scripts /config
+
+USER 65534:65534
+
+ENV VIRTUAL_ENV=/scripts/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+RUN pip3 install --upgrade pip && \
+    pip3 install \
+      --no-cache-dir \
+      -r requirements.txt
 
 COPY scripts/* /scripts/
 COPY config/* /config/
