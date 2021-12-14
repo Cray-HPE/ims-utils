@@ -44,11 +44,7 @@ RUN apk add --upgrade --no-cache apk-tools \
            /tmp/* \
         && mkdir -p \
            /scripts \
-           /config \
-         && chown -Rv 65534:65534 \
-           /scripts /config
-
-USER 65534:65534
+           /config
 
 ENV VIRTUAL_ENV=/scripts/venv
 RUN python3 -m venv $VIRTUAL_ENV
