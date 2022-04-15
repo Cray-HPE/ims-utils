@@ -53,6 +53,16 @@ pipeline {
         stage("Set Versions") {
             steps {
                 // This function is defined in cms-meta-tools:vars/setVersionFiles.groovy
+                //sh "git fetch origin master"
+                //sh "git fetch origin develop"
+                //sh "git fetch origin CASMCMS-7676"
+                //sh "git checkout master"
+                //sh "git checkout develop"
+                //sh "git checkout CASMCMS-7676"
+                //sh "git checkout $GIT_BRANCH"
+                sh "git config --get remote.origin.fetch"
+                sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
+                sh "git fetch origin"
                 setVersionFiles()
             }
         }
