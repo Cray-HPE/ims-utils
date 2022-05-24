@@ -38,7 +38,7 @@ An example of using this container (as an `initContainer`) is provided below.
 
 ```
       initContainers:
-      - image: dtr.dev.cray.com:443/cray/ims-utils:1.1.2
+      - image: artifactory.algol60.net/csm-docker/stable/cray-ims-utils:2.6.80
         name: fetch-recipe
         env:
         - name: API_GATEWAY_HOSTNAME
