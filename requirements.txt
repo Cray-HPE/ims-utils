@@ -8,3 +8,5 @@ requests
 kubernetes
 ims-python-helper
 requests_oauthlib
+jinja2
+pyyaml
