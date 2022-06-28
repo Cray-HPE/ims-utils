@@ -26,14 +26,19 @@
 
 import argparse
 import logging
-import oauthlib.oauth2
 import os
-import requests
-import requests_oauthlib
+import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
+
+import jinja2
+import oauthlib.oauth2
+import requests
+import requests_oauthlib
+import yaml
 from ims_python_helper import ImsHelper
 from requests.adapters import HTTPAdapter
 from requests.exceptions import RequestException
@@ -44,6 +49,7 @@ logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
 
 IMS_URL = os.environ.get("IMS_URL", "https://api-gw-service-nmn.local/apis/ims")
 CA_CERT = os.environ.get("CA_CERT", "")
+
 
 class FetchBase(object):
 
@@ -307,6 +313,74 @@ class FetchRecipe(FetchBase):
             self.ims_helper.image_set_job_status(self.IMS_JOB_ID, "error")
             sys.exit(1)
 
+    def template_recipe(self):
+        """
+        Optionally apply jinja2 templating to one or more files within the uncompressed recipe.
+        """
+        ims_recipe_template_yaml = os.path.join(self.path, '.ims_recipe_template.yaml')
+
+        # Compile a list of key/value pairs from the environment
+        template_values = {}
+        try:
+            with open("/etc/cray/template_dictionary") as inf:
+                template_values = yaml.safe_load(inf)
+        except FileNotFoundError:
+            LOGGER.warning("/etc/cray/template_dictionary was not found. Will continue without templating the recipe.")
+            return
+
+        if not os.path.isfile(ims_recipe_template_yaml) and not template_values:
+            LOGGER.info("The recipe does not need to be templated.")
+            return
+
+        if os.path.isfile(ims_recipe_template_yaml) and not template_values:
+            LOGGER.error("The recipe expects to be templated, but the IMS recipe record "
+                         "does not specify any values in the template_dictionary.")
+            sys.exit(1)
+
+        if template_values and not os.path.isfile(ims_recipe_template_yaml):
+            LOGGER.warning("The IMS recipe record has values in the template_dictionary, but the recipe does "
+                           "not expect to be templated. Will continue without templating the recipe.")
+            return
+
+        with open(ims_recipe_template_yaml) as inf_yaml:
+            try:
+                loader = jinja2.FileSystemLoader(self.path)
+                env = jinja2.Environment(loader=loader)
+
+                ims_recipe_template = yaml.safe_load(inf_yaml)
+                for template_file in ims_recipe_template['template_files']:
+
+                    # Make sure that we're looking at a file within the recipe directory
+                    absolute_file_name = os.path.abspath(
+                        os.path.expanduser(os.path.join(self.path, template_file))
+                    )
+
+                    if not absolute_file_name.startswith(self.path):
+                        LOGGER.error(
+                            f"The recipe is trying to template a file '{absolute_file_name}' "
+                            "outside of the IMS recipe directory.")
+                        sys.exit(1)
+
+                    # Check that the file exists
+                    if not os.path.isfile(absolute_file_name):
+                        LOGGER.error(
+                            f"The recipe is trying to template a file '{absolute_file_name}' that does not exist.")
+                        sys.exit(1)
+
+                    # Apply the template modifications
+                    template = env.get_template(absolute_file_name[len(self.path) + 1:])
+                    with tempfile.NamedTemporaryFile("w", delete=False) as outf:
+                        outf.write(template.render(**template_values))
+
+                    # remove the original file replace with the templated version
+                    os.remove(absolute_file_name)
+                    shutil.move(outf.name, absolute_file_name)
+            except KeyError as keyerror:
+                LOGGER.error("Error: Missing key while reading .ims_recipe_template.yaml file.", exc_info=keyerror)
+
+            except yaml.YAMLError as exc:
+                LOGGER.error("Error reading .ims_recipe_template.yaml in the recipe.", exc_info=exc)
+
     def run(self):
         try:
             LOGGER.info("Setting job status to 'fetching_recipe'.")
@@ -315,6 +389,8 @@ class FetchRecipe(FetchBase):
             self.download_file(self.url, self.recipe_tgz)
             LOGGER.info("Uncompressing recipe into %s", self.path)
             self.untar_recipe()
+            LOGGER.info("Templating recipe")
+            self.template_recipe()
         except Exception as exc:
             LOGGER.error("Error unhandled exception while fetching recipe.", exc_info=exc)
             self.ims_helper.image_set_job_status(self.IMS_JOB_ID, "error")
