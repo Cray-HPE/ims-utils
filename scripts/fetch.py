@@ -41,7 +41,7 @@ import requests_oauthlib
 import yaml
 from ims_python_helper import ImsHelper
 from requests.adapters import HTTPAdapter
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, ChunkedEncodingError
 from requests.packages.urllib3.util.retry import Retry
 
 LOGGER = logging.getLogger(__file__)
@@ -231,9 +231,12 @@ class FetchBase(object):
                     for chunk in response.iter_content(chunk_size=1024):
                         if chunk:
                             fout.write(chunk)
+        except ChunkedEncodingError as ce:
+            LOGGER.error(f"Chunked error: {ce}")
+            self.ims_helper.image_set_job_status(self.IMS_JOB_ID, "error")
+            sys.exit(1)
         except RequestException as e:
             LOGGER.error("Error downloading %s:", download_url, exc_info=e)
-            LOGGER.error(f"  Exception info:{e}")
             self.ims_helper.image_set_job_status(self.IMS_JOB_ID, "error")
             sys.exit(1)
 
