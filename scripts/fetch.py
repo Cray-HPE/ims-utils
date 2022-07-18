@@ -233,6 +233,7 @@ class FetchBase(object):
                             fout.write(chunk)
         except RequestException as e:
             LOGGER.error("Error downloading %s:", download_url, exc_info=e)
+            LOGGER.error(f"  Exception info:{e}")
             self.ims_helper.image_set_job_status(self.IMS_JOB_ID, "error")
             sys.exit(1)
 
