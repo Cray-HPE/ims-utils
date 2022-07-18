@@ -61,9 +61,14 @@ class FetchBase(object):
             LOGGER.error("Missing environment variable IMS_JOB_ID.", exc_info=key_error)
             sys.exit(1)
 
+        LOGGER.debug("Creating secure session")
         self.oauth_session = FetchBase.create_oauth_session()
+
         # Remove insecure session once CASMCMS-4521 (Update IMS to talk via HTTPS to ceph rados gateway) is unblocked
+        LOGGER.debug("Creating insecure session")
         self.insecure_session = FetchBase.create_session()
+
+        LOGGER.debug("Creating ims helper object")
         self.ims_helper = ImsHelper(
             ims_url=IMS_URL,
             session=self.oauth_session,
@@ -173,9 +178,11 @@ class FetchBase(object):
         retries = 0
         while True:
             try:
+                LOGGER.debug("Calling session.fetch_token")
                 session.fetch_token(
                     token_url=oauth_client_endpoint, client_id=oauth_client_id,
                     client_secret=oauth_client_secret, timeout=500)
+                LOGGER.debug("  Returned from session.fetch_token")
                 return session
 
             except RequestException as exc:
@@ -183,6 +190,9 @@ class FetchBase(object):
                 LOGGER.info("Received exception:", exc_info=exc)
                 LOGGER.info("Retrying (%s) in 7 seconds", retries)
                 time.sleep(7)
+            except Exception as e:
+                LOGGER.info("Uncaught exception:", exc_info=e)
+                raise
 
     @staticmethod
     def create_session():
@@ -221,8 +231,8 @@ class FetchBase(object):
                     for chunk in response.iter_content(chunk_size=1024):
                         if chunk:
                             fout.write(chunk)
-        except RequestException:
-            LOGGER.error("Error downloading %s:", download_url, exc_info=True)
+        except RequestException as e:
+            LOGGER.error("Error downloading %s:", download_url, exc_info=e)
             self.ims_helper.image_set_job_status(self.IMS_JOB_ID, "error")
             sys.exit(1)
 
