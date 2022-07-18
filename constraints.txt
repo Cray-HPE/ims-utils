@@ -10,6 +10,7 @@ ims-python-helper==2.9.0
 Jinja2==2.10.1
 jmespath==0.9.4
 kubernetes==11.0.0
+MarkupSafe<2.1.0
 oauthlib==2.1.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.2
