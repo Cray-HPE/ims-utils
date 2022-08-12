@@ -73,7 +73,7 @@ PARAMETER_FILE_BUILD_FAILED=$IMAGE_ROOT_PARENT/build_failed
 # Make the parent directory where the build environment signal files
 # Make sure the owner/grp is root:root
 mkdir -p "$IMAGE_ROOT_PARENT"
-chmod root:root "$IMAGE_ROOT_PARENT"
+chown root:root "$IMAGE_ROOT_PARENT"
 
 copy_ca_root_key() {
     local IMAGE_ROOT_DIR=$1
