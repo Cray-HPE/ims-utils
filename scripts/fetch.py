@@ -218,7 +218,7 @@ class FetchBase(object):
             LOGGER.info("Saving file as '%s'", filename)
             if response.ok:
                 with open(filename, 'wb') as fout:
-                    for chunk in response.iter_content(chunk_size=1024):
+                    for chunk in response.iter_content(chunk_size=1024*1024):
                         if chunk:
                             fout.write(chunk)
         except RequestException:
