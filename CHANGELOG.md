@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2022-09-28
+
+### Changed
+- CASMTRIAGE-4268 - Increased the s3 file download chunk size for better performance.
+
 ## [2.8.1] - 2022-08-01
 ### Changed
 - CASMCMS-7970 - fix ims-python-helper version.
