@@ -26,6 +26,7 @@
 
 import argparse
 import logging
+from multiprocessing.connection import wait
 import os
 import shutil
 import subprocess
@@ -212,20 +213,38 @@ class FetchBase(object):
             download_url : URL of the file to be downloaded
             filename : The filename where the file is to be stored
         """
-        try:
-            response = self.insecure_session.get(download_url, stream=True, allow_redirects=True)
-            response.raise_for_status()
-            LOGGER.info("Saving file as '%s'", filename)
-            if response.ok:
-                with open(filename, 'wb') as fout:
-                    for chunk in response.iter_content(chunk_size=1024*1024):
-                        if chunk:
-                            fout.write(chunk)
-        except RequestException:
-            LOGGER.error("Error downloading %s:", download_url, exc_info=True)
+
+        # allow multiple failures while tring to download file
+        LOGGER.info("Saving file as '%s'", filename)
+        numAttempts=0
+        sleepTime=10
+        maxAttempts=20
+        while numAttempts<maxAttempts:
+            try:
+                response = self.insecure_session.get(download_url, stream=True, allow_redirects=True)
+                response.raise_for_status()
+                if response.ok:
+                    with open(filename, 'wb') as fout:
+                        for chunk in response.iter_content(chunk_size=1024*1024):
+                            if chunk:
+                                fout.write(chunk)
+                LOGGER.info("File download complete.")
+                break
+            except RequestException as err:
+                # catch the exception so we can try again
+                LOGGER.warning(f"Error {err} downloading {download_url}")
+
+            numAttempts += 1
+            LOGGER.warning(f"Sleeping {sleepTime} sec and trying again...")
+            time.sleep(sleepTime)
+
+        # if we have hit number of attempts without succeeding bail
+        if numAttempts >= maxAttempts:
+            LOGGER.error(f"Failed to download {download_url} after {numAttempts} tries.")
             self.ims_helper.image_set_job_status(self.IMS_JOB_ID, "error")
             sys.exit(1)
 
+        # verify the md5 sum of the downloaded file
         download_md5sum = os.environ.get("DOWNLOAD_MD5SUM", "")
         if download_md5sum:
             LOGGER.info("Verifying md5sum of the downloaded file.")

@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.9.0] - 2022-09-28
+## [2.9.1] - 2022-11-09
+### Changed
+- CASMCMS-8316 - Added a retry to the file download so it doesn't fail once and quit.
 
+## [2.9.0] - 2022-09-28
 ### Changed
 - CASMTRIAGE-4268 - Increased the s3 file download chunk size for better performance.
 
