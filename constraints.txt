@@ -6,9 +6,11 @@ chardet==3.0.4
 docutils==0.14
 google-auth==1.6.1
 idna==2.8
-ims-python-helper==2.7.29
+ims-python-helper>=2.9.0
+Jinja2==2.10.1
 jmespath==0.9.4
 kubernetes==11.0.0
+MarkupSafe<2.1.0
 oauthlib==2.1.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.2

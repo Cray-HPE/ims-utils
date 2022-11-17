@@ -9,4 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Authenticate to CSM's artifactory
 
-## [1.0.0] - (no date)
+## [2.9.1] - 2022-11-09
+### Changed
+- CASMCMS-8316 - Added a retry to the file download so it doesn't fail once and quit.
+
+## [2.9.0] - 2022-09-28
+### Changed
+- CASMTRIAGE-4268 - Increased the s3 file download chunk size for better performance.
+
+## [2.8.1] - 2022-08-01
+### Changed
+- CASMCMS-7970 - fix ims-python-helper version.
+
+## [2.8.0] - 2022-08-01
+### Changed
+- CASMCMS-8093 - fix the python dependencies.
+- CASMCMS-7970 - update dev.cray.com server addresses.
+
+## [2.7.0] - 2022-06-28
+### Added
+- Add support for templating IMS recipes during IMS create jobs
+
