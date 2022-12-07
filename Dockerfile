@@ -53,7 +53,8 @@ ENV VIRTUAL_ENV=/scripts/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN pip3 install --upgrade pip && \
+RUN --mount=type=secret,id=netrc,target=/root/.netrc \
+    pip3 install --upgrade pip && \
     pip3 install \
       --no-cache-dir \
       -r requirements.txt

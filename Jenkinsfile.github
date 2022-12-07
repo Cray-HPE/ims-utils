@@ -15,6 +15,7 @@ pipeline {
         NAME = "cray-ims-utils"
         DESCRIPTION = "Cray image management service utility docker image"
         IS_STABLE = getBuildIsStable()
+	DOCKER_BUILDKIT = "1"
     }
 
     stages {
