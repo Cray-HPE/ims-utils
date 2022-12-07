@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.2] - 2022-12-02
+### Added
+- Authenticate to CSM's artifactory
+
 ## [2.9.1] - 2022-11-09
 ### Changed
 - CASMCMS-8316 - Added a retry to the file download so it doesn't fail once and quit.
@@ -27,3 +31,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.7.0] - 2022-06-28
 ### Added
 - Add support for templating IMS recipes during IMS create jobs
+
