@@ -40,4 +40,4 @@ lint:
 		./cms_meta_tools/scripts/runLint.sh
 
 image:
-		docker buildx build --platform linux/amd64,linux/arm64 --pull ${DOCKER_ARGS} --tag '${NAME}:${DOCKER_VERSION}' .
+		docker buildx build --platform linux/arm64 --pull ${DOCKER_ARGS} --tag '${NAME}:${DOCKER_VERSION}' .
