@@ -33,26 +33,26 @@ FROM docker.io/library/alpine:3.15 as base
 # Add utilities that are required for this command
 WORKDIR /
 COPY requirements.txt constraints.txt /
-RUN apk add --upgrade --no-cache apk-tools \
-		&& apk update \
-        && apk add --update --no-cache \
-            curl \
-            rpm \
-            squashfs-tools \
-            tar \
-            python3 \
-            py3-pip \
-            gcc \
-            python3-dev \
-            libc-dev \
-        && apk -U upgrade --no-cache \
-        &&  rm -rf \
-           /var/cache/apk/* \
-           /root/.cache \
-           /tmp/* \
-        && mkdir -p \
-           /scripts \
-           /config
+RUN apk add --upgrade --no-cache apk-tools
+RUN apk update 
+RUN apk add --update --no-cache \
+        curl \
+        rpm \
+        squashfs-tools \
+        tar \
+        python3 \
+        py3-pip \
+        gcc \
+        python3-dev \
+        libc-dev
+RUN apk -U upgrade --no-cache
+RUN rm -rf \
+       /var/cache/apk/* \
+       /root/.cache \
+       /tmp/*
+RUN mkdir -p \
+        /scripts \
+        /config
 
 ENV VIRTUAL_ENV=/scripts/venv
 RUN python3 -m venv $VIRTUAL_ENV
