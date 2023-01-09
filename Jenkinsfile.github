@@ -28,7 +28,7 @@
 
 pipeline {
     agent {
-        label "linux-arm64"
+        label "metal-gcp-builder"
     }
 
     options {
