@@ -24,7 +24,7 @@
  *
  */
 @Library('cms-meta-tools') _
-@Library('csm-shared-library') __
+@Library('csm-shared-library@feature/arm64') __
 
 pipeline {
     agent {
