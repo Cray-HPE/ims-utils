@@ -24,11 +24,11 @@
  *
  */
 @Library('cms-meta-tools') _
-@Library('csm-shared-library@feature/arm64') __
+@Library('csm-shared-library@multiarch') __
 
 pipeline {
     agent {
-        label "linux-arm64"
+        label "metal-gcp-builder"
     }
 
     options {
@@ -80,6 +80,7 @@ pipeline {
 
             steps {
                 echo "Docker args are ${env.DOCKER_ARGS}"
+                // sh "sudo apt install -y qemu-user-static"
                 sh "make image"
             }
         }
@@ -90,7 +91,7 @@ pipeline {
             }
 
             steps {
-                publishCsmDockerImage(image: env.NAME, tag: env.DOCKER_VERSION, isStable: env.IS_STABLE, signImage: false)
+                publishCsmDockerImage(image: env.NAME, tag: env.DOCKER_VERSION, isStable: env.IS_STABLE, multiArch: true)
             }
         }
     }
