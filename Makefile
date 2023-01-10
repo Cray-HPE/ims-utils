@@ -27,8 +27,13 @@
 NAME ?= cray-ims-utils
 DOCKER_VERSION ?= $(shell head -1 .docker_version)
 
+ifndef DOCKER_ARGS
 ifneq ($(wildcard ${HOME}/.netrc),)
-        DOCKER_ARGS ?= --secret id=netrc,src=${HOME}/.netrc
+		DOCKER_ARGS ?= --secret id=netrc,src=${HOME}/.netrc
+endif
+ifeq ($(shell uname -m),aarch64)
+		DOCKER_ARGS ?= --platform linux/arm64
+endif
 endif
 
 all: runbuildprep lint image
@@ -40,4 +45,4 @@ lint:
 		./cms_meta_tools/scripts/runLint.sh
 
 image:
-		docker buildx build --platform linux/arm64 --pull ${DOCKER_ARGS} --tag '${NAME}:${DOCKER_VERSION}' .
+		docker buildx build --pull ${DOCKER_ARGS} --tag '${NAME}:${DOCKER_VERSION}' .
