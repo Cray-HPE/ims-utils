@@ -90,7 +90,7 @@ pipeline {
             }
 
             steps {
-                publishCsmDockerImage(image: env.NAME, tag: env.DOCKER_VERSION, isStable: env.IS_STABLE, snykSecurity: false)
+                publishCsmDockerImage(image: env.NAME, tag: env.DOCKER_VERSION, isStable: env.IS_STABLE, snykSecurity: false, signImage: false)
             }
         }
     }
