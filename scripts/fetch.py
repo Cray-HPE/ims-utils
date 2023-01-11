@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2019-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -391,7 +391,8 @@ class FetchRecipe(FetchBase):
                     with tempfile.NamedTemporaryFile("w", delete=False) as outf:
                         outf.write(template.render(**template_values))
 
-                    # remove the original file replace with the templated version
+                    # remove the original file replace with the templated version - preserve the permissions
+                    shutil.copymode(absolute_file_name, outf.name)
                     os.remove(absolute_file_name)
                     shutil.move(outf.name, absolute_file_name)
             except KeyError as keyerror:
