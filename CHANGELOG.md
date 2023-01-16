@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CASMCMS-8368 - add an arm64 image to the build
 
+## [2.9.4] - 2023-01-11
+### Changed
+- CASMTRIAGE-4784 - Preserve file permissions when applying recipe templates.
+
 ## [2.9.3] - 2022-12-20
 ### Added
 - Add Artifactory authentication to Jenkinsfile
