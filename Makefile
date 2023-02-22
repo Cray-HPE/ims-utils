@@ -43,4 +43,3 @@ image:
 		docker buildx create --use
 		docker buildx build --platform=linux/amd64,linux/arm64 --pull ${DOCKER_ARGS} .
 		docker buildx build --platform=linux/amd64 --load --tag '${NAME}:${DOCKER_VERSION}' .
-		docker buildx build --platform=linux/arm64 --load --tag '${NAME}:${DOCKER_VERSION}-arm64' .

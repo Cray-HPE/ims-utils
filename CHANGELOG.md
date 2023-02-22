@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - CASMCMS-8368 - add an arm64 image to the build
+- CASMCMS-8459 - more arm64 image support
 
 ## [2.9.4] - 2023-01-11
 ### Changed
