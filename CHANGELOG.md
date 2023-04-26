@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CASMCMS-8368 - add an arm64 image to the build
 
+### Removed
+- Removed defunct files leftover from previous versioning system
+
 ## [2.9.4] - 2023-01-11
 ### Changed
 - CASMTRIAGE-4784 - Preserve file permissions when applying recipe templates.
