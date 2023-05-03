@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2019-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -31,6 +31,11 @@ import subprocess
 
 RPM_NAME = "cray_ca_cert"
 RPM_VERSION = "1.0.1"
+
+# set up the target platform for the rpm build
+RPM_ARCHITECTURE = "x86_64"
+if os.environ['BUILD_PLATFORM'] == 'aarch64':
+    RPM_ARCHITECTURE = "arm64"
 
 ETC_CRAY_CA_DIR = "etc/cray/ca"
 CERTIFICATE_AUTHORITY_NAME = "certificate_authority.crt"
@@ -79,10 +84,9 @@ def main():
     # Copy source archive and spec file into RPMBUILD directories
     shutil.copyfile(SOURCE_TAR_FILE, os.path.join(RPM_BUILD_ROOT, "SOURCES", SOURCE_TAR_FILE))
     shutil.copyfile(SPECFILE_SOURCE_FILE, os.path.join(RPM_BUILD_ROOT, "SPECS", SPECFILE_NAME))
-
-    subprocess.check_call(["rpmbuild", "-bb", os.path.join(RPM_BUILD_ROOT, "SPECS", SPECFILE_NAME)])
-    shutil.copyfile(os.path.join(RPM_BUILD_ROOT, "RPMS", "x86_64", f"cray_ca_cert-{RPM_VERSION}-1.x86_64.rpm"),
-                    f"/mnt/ca-rpm/cray_ca_cert-{RPM_VERSION}-1.x86_64.rpm")
+    subprocess.check_call(["rpmbuild", "-bb", "--target", RPM_ARCHITECTURE, os.path.join(RPM_BUILD_ROOT, "SPECS", SPECFILE_NAME)])
+    shutil.copyfile(os.path.join(RPM_BUILD_ROOT, "RPMS", RPM_ARCHITECTURE, f"cray_ca_cert-{RPM_VERSION}-1.{RPM_ARCHITECTURE}.rpm"),
+                    f"/mnt/ca-rpm/cray_ca_cert-{RPM_VERSION}-1.{RPM_ARCHITECTURE}.rpm")
 
 
 if __name__ == "__main__":

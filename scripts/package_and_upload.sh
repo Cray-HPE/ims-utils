@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -44,6 +44,7 @@ IMAGE_ROOT_DIR=${IMAGE_ROOT_DIR:-/mnt/image/build/image-root/}
 KERNEL_FILENAME=${KERNEL_FILENAME:-vmlinuz}
 INITRD_FILENAME=${INITRD_FILENAME:-initrd}
 IMAGE_ROOT_ARCHIVE_NAME=${IMAGE_ROOT_ARCHIVE_NAME:-$KIWI_RECIPE_NAME}
+BUILD_PLATFORM=${BUILD_PLATFORM:-x86_64}
 
 # Set ims job status
 set_job_status "packaging_artifacts"
@@ -75,7 +76,8 @@ if [[ -n "$KERNEL_PARAMETERS_FILENAME" ]]; then
       -r "$IMAGE_ROOT_PARENT/$IMAGE_ROOT_ARCHIVE_NAME.sqsh" \
       -k "$IMAGE_ROOT_DIR/boot/$KERNEL_FILENAME" \
       -i "$IMAGE_ROOT_DIR/boot/$INITRD_FILENAME" \
-      -p "$IMAGE_ROOT_DIR/boot/$KERNEL_PARAMETERS_FILENAME"
+      -p "$IMAGE_ROOT_DIR/boot/$KERNEL_PARAMETERS_FILENAME" \
+      --platform "$BUILD_PLATFORM"
     fail_if_error "Uploading and registering IMS artifacts"
     exit 0
   fi
@@ -88,6 +90,7 @@ time python3 -m ims_python_helper image upload_artifacts "$IMAGE_ROOT_ARCHIVE_NA
   -t "$IMS_PYTHON_HELPER_TIMEOUT" \
   -r "$IMAGE_ROOT_PARENT/$IMAGE_ROOT_ARCHIVE_NAME.sqsh" \
   -k "$IMAGE_ROOT_DIR/boot/$KERNEL_FILENAME" \
-  -i "$IMAGE_ROOT_DIR/boot/$INITRD_FILENAME"
+  -i "$IMAGE_ROOT_DIR/boot/$INITRD_FILENAME" \
+  --platform "$BUILD_PLATFORM"
 fail_if_error "Uploading and registering IMS artifacts"
 exit 0
