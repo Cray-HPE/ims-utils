@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CASMCMS-8368 - add an arm64 image to the build
 - CASMCMS-8459 - more arm64 image support
+- CASMCMS-8595 - rename platform to arch
 
 ### Removed
 - Removed defunct files leftover from previous versioning system
