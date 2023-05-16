@@ -32,10 +32,8 @@ import subprocess
 RPM_NAME = "cray_ca_cert"
 RPM_VERSION = "1.0.1"
 
-# set up the target architecture for the rpm build
-RPM_ARCHITECTURE = "x86_64"
-if os.environ['BUILD_ARCH'] == 'aarch64':
-    RPM_ARCHITECTURE = "arm64"
+# There is nothing arch specific in here so build accordingly
+RPM_ARCHITECTURE = "noarch"
 
 ETC_CRAY_CA_DIR = "etc/cray/ca"
 CERTIFICATE_AUTHORITY_NAME = "certificate_authority.crt"
