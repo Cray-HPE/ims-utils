@@ -50,10 +50,10 @@ KERNEL_FILENAME=${KERNEL_FILENAME:-${KERNEL_DEFAULT}}
 # HACK: the craycli will always create a default value of 'vmlinuz' regardless of
 #  aarch rather than allow 'no default' to pass through if the user does not enter
 #  anything. Override at this point and fix in Jira CASMCMS-8624.
-if [ "$BUILD_ARCH" = "aarch64" -a "$KERNEL_FILENAME" = "vmlinuz" ]; then
-  echo "Incorrect default kernel filename for aarch64 - defaulting to Image"
-  KERNEL_FILENAME="Image"
-fi
+# if [ "$BUILD_ARCH" = "aarch64" -a "$KERNEL_FILENAME" = "vmlinuz" ]; then
+#   echo "Incorrect default kernel filename for aarch64 - defaulting to Image"
+#   KERNEL_FILENAME="Image"
+# fi
 
 IMS_PYTHON_HELPER_TIMEOUT=${IMS_PYTHON_HELPER_TIMEOUT:-720}
 IMAGE_ROOT_PARENT=${IMAGE_ROOT_PARENT:-/mnt/image}
