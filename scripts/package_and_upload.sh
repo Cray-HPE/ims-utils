@@ -40,12 +40,12 @@ source /scripts/helper.sh
 
 # default kernel file name is different for aarch64 but allow override from existing
 # KERNEL_FILENAME param
-BUILD_ARCH=${BUILD_ARCH:-x86_64}
-case "$BUILD_ARCH" in
-  "aarch64") KERNEL_DEFAULT="Image" ;;
-  *) KERNEL_DEFAULT="vmlinuz" ;;
-esac
-KERNEL_FILENAME=${KERNEL_FILENAME:-${KERNEL_DEFAULT}}
+# BUILD_ARCH=${BUILD_ARCH:-x86_64}
+# case "$BUILD_ARCH" in
+#   "aarch64") KERNEL_DEFAULT="Image" ;;
+#   *) KERNEL_DEFAULT="vmlinuz" ;;
+# esac
+# KERNEL_FILENAME=${KERNEL_FILENAME:-${KERNEL_DEFAULT}}
 
 # HACK: the craycli will always create a default value of 'vmlinuz' regardless of
 #  aarch rather than allow 'no default' to pass through if the user does not enter
