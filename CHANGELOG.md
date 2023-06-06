@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.5] - 2023-06-06
+- CASMINST-6450 - Pin versions for csm-1.3.4 release.
+
 ## [2.9.4] - 2023-01-11
 ### Changed
 - CASMTRIAGE-4784 - Preserve file permissions when applying recipe templates.
