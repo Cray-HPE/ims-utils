@@ -282,7 +282,7 @@ class FetchImage(FetchBase):
     def unsquash_image(self):
         # Expand the image root from its archive (squashfs) and remove the archive
         try:
-            subprocess.check_output(["unsquashfs", "-f", "-d",
+            subprocess.check_output(["unsquashfs", "-f", "-d", "-no",
                                      "{}".format(os.path.join(self.path, "image-root")),
                                      self.image_sqshfs])
         except subprocess.CalledProcessError as exc:
