@@ -214,6 +214,9 @@ class FetchBase(object):
             filename : The filename where the file is to be stored
         """
 
+        # insure the parent dirs exist
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        
         # allow multiple failures while tring to download file
         LOGGER.info("Saving file as '%s'", filename)
         numAttempts=0

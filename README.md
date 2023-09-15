@@ -55,15 +55,13 @@ An example of using this container (as an `initContainer`) is provided below.
         - configMapRef:
             name: cray-ims-$id-configmap
         volumeMounts:
-        - name: recipe-vol
-          mountPath: /mnt/recipe
         - name: ca-pubkey
           mountPath: /etc/cray/ca
           readOnly: true
         - name: admin-client-auth
           mountPath: '/etc/admin-client-auth'
           readOnly: true
-        command: [ "sh", "-ce", "/scripts/fetch-recipe.sh /mnt/recipe $download_url" ]
+        command: [ "sh", "-ce", "/scripts/fetch-recipe.sh /mnt/image/recipe $download_url" ]
 ```
 
 ## Deployment
