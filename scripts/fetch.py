@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2019-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2019-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,12 @@
 # Author: Eric Cozzi
 
 import argparse
+import logging
+import os
 from ims_python_helper.fetch import FetchImage, FetchRecipe
+
+LOGGER = logging.getLogger(__file__)
+logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
 
 def main():
     """
@@ -35,6 +40,7 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--recipe', action='store_true')
     group.add_argument('--image', action='store_true')
+    parser.add_argument('unpack')
     parser.add_argument('path')
     parser.add_argument('url')
     args = parser.parse_args()
@@ -42,7 +48,8 @@ def main():
     if args.recipe:
         FetchRecipe(args.path, args.url).run()
     elif args.image:
-        FetchImage(args.path, args.url).run()
+        b_unpack = args.unpack.lower() in ['true', '1', 't', 'y']
+        FetchImage(args.path, args.url).run(b_unpack)
 
 if __name__ == "__main__":
     main()

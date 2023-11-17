@@ -7,4 +7,3 @@ AuthorizedKeysFile    /etc/cray/ims/authorized_keys
 PasswordAuthentication no
 ChallengeResponseAuthentication no
 Subsystem sftp internal-sftp
-
