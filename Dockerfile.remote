@@ -21,47 +21,25 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-# Cray Image Management Service image build environment utilities Dockerfile
-#
 
-FROM artifactory.algol60.net/docker.io/alpine:3.15 as base
+# Dockerfile for IMS remote customization jobs
 
-# Add utilities that are required for this command
-WORKDIR /
-COPY requirements.txt constraints.txt /
-RUN apk add --upgrade --no-cache apk-tools \
-        && apk update \
-        && apk add --update --no-cache \
-            curl \
-            rpm \
-            squashfs-tools \
-            tar \
-            python3 \
-            py3-pip \
-            gcc \
-            python3-dev \
-            libc-dev \
-            podman \
-            openssh \
-        && apk -U upgrade --no-cache \
-        &&  rm -rf \
-           /var/cache/apk/* \
-           /root/.cache \
-           /tmp/* \
-        && mkdir -p \
-           /scripts \
-           /config
+# Start with the ims-sshd image as it will have most of the tools needed
+FROM registry.local/$IMS_SSHD_IMAGE as base
 
-ENV VIRTUAL_ENV=/scripts/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+COPY /scripts/remote_customize_entrypoint.sh /entrypoint.sh
+COPY /etc/cray/ca/certificate_authority.crt /etc/cray/ca/certificate_authority.crt
+COPY /etc/admin-client-auth /etc/admin-client-auth
+COPY /mnt/image/image.sqsh /data/
+COPY /config/sshd_config /etc/cray/ims/sshd_config
+COPY /root/.ssh/id_ecdsa.pub /etc/cray/ims/authorized_keys
 
-RUN --mount=type=secret,id=netrc,target=/root/.netrc \
-    pip3 install --upgrade pip && \
-    pip3 install \
-      --no-cache-dir \
-      -r requirements.txt
+# Copy in env vars needed for the remote job run
+ENV OAUTH_CONFIG_DIR=$OAUTH_CONFIG_DIR
+ENV BUILD_ARCH=$BUILD_ARCH
+ENV IMS_JOB_ID=$IMS_JOB_ID
+ENV IMAGE_ROOT_PARENT=$IMAGE_ROOT_PARENT
+ENV SSH_JAIL=$SSH_JAIL
+ENV JOB_ENABLE_DKMS=$JOB_ENABLE_DKMS
 
-COPY scripts/* /scripts/
-COPY config/* /config/
-COPY Dockerfile.remote /Dockerfile.remote
+ENTRYPOINT ["/entrypoint.sh"]
