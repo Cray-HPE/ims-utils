@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - CASMCMS-8821 - add support for remote build jobs.
+- CASMCMS-8818 - ssh key injection into jobs.
 
 ## [2.11.0] - 2023-09-15
 ### Changed

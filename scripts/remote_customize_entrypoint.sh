@@ -35,14 +35,40 @@ IMAGE_ROOT_DIR=${IMAGE_ROOT_DIR:-${IMAGE_ROOT_PARENT}/image-root/}
 # set up file locations
 SIGNAL_FILE_REMOTE_EXITING=$IMAGE_ROOT_PARENT/remote_exiting
 
-SSH_CONFIG_FILE=/etc/cray/ims/sshd_config
+SSHD_CONFIG_FILE=/etc/cray/ims/sshd_config
+
+setup_resolv() {
+    # Copy the container's /etc/resolv.conf to the image root for customization
+    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
+    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
+    if [ -f "$IMAGE_ROOT_RESOLV" ]; then
+        mv "$IMAGE_ROOT_RESOLV" "$TMP_RESOLV"
+    fi
+    cp /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
+}
+
+restore_resolv() {
+    # Restore the image root's old /etc/resolv.conf after customization
+    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
+    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
+    rm "$IMAGE_ROOT_RESOLV"
+    if [ -f "$TMP_RESOLV" ]; then
+        mv "$TMP_RESOLV" "$IMAGE_ROOT_RESOLV"
+    fi
+}
+
+copy_ca_root_key() {
+    echo "Copying SMS CA Public Certificate to target image root"
+    mkdir -p "$IMAGE_ROOT_DIR/etc/cray"
+    cp -r /etc/cray/ca "$IMAGE_ROOT_DIR/etc/cray/"
+}
 
 # check the contents of the imported env vars
 echo "Checking env vars"
 IMPORTED_VALS=('OAUTH_CONFIG_DIR' 'BUILD_ARCH' 'IMS_JOB_ID' 'IMAGE_ROOT_PARENT')
 for item in "${IMPORTED_VALS[@]}"; do
   if [[ -z "${!item}" ]]; then
-    echo ERROR: $item not set in env.sh
+    echo ERROR: $item not set in Environment
     exit 1
   fi
 done
@@ -58,8 +84,8 @@ SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/failed
 USER_SIGNAL_FILE_COMPLETE=$IMAGE_ROOT_PARENT/complete
 USER_SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/failed
 if [ "$SSH_JAIL" = "True" ]; then
-  USER_SIGNAL_FILE_COMPLETE=$IMAGE_ROOT_DIR/tmp/complete
-  USER_SIGNAL_FILE_FAILED=$IMAGE_ROOT_DIR/tmp/failed
+  USER_SIGNAL_FILE_COMPLETE=${IMAGE_ROOT_DIR}tmp/complete
+  USER_SIGNAL_FILE_FAILED=${IMAGE_ROOT_DIR}tmp/failed
 fi
 
 # Make Cray's CA certificate a trusted system certificate within the container
@@ -83,9 +109,39 @@ fi
 mkdir -p $IMAGE_ROOT_PARENT
 unsquashfs -f -d $IMAGE_ROOT_DIR /data/image.sqsh
 
+# Copy cray certs into image
+copy_ca_root_key
+
+# Copy the container's resolv.conf to the image root
+setup_resolv
+
+# If setting up for dkms permissions, do that now
+echo "JOB_ENABLE_DMKS: $JOB_ENABLE_DKMS"
+is_dkms=$(echo $JOB_ENABLE_DKMS | tr '[:upper:]' '[:lower:]')
+echo "is_dkms=$is_dkms"
+if [ "$is_dkms" = "true" ]; then
+    if mount -t sysfs /sysfs /mnt/image/image-root/sys; then
+        echo "Mounted /sys"
+    else
+        echo "Failed to mount /sys"
+    fi
+    if mount -t proc /proc /mnt/image/image-root/proc; then
+        echo "Mounted /proc"
+    else
+        echo "Failed to mount /proc"
+    fi
+    if mount -t devtmpfs /devtmpfs /mnt/image/image-root/dev; then
+        echo "Mounted /dev"
+    else
+        echo "Failed to mount /dev"
+    fi
+else
+    echo "DKMS not enabled"
+fi
+
 # Configure the sshd_config file for jailed chroot dir if needed
 if [ "$SSH_JAIL" = "True" ]; then
-  echo "ChrootDirectory $IMAGE_ROOT_DIR" >> $SSH_CONFIG_FILE
+  echo "ChrootDirectory $IMAGE_ROOT_DIR" >> $SSHD_CONFIG_FILE
 fi
 
 # set up keys for ssh access
@@ -93,10 +149,10 @@ mkdir -p ~/.ssh
 ssh-keygen -A
 
 # add env vars the incomming users need
-echo "SetEnv IMS_JOB_ID=$IMS_JOB_ID IMS_ARCH=$BUILD_ARCH IMS_DKMS_ENABLED=$JOB_ENABLE_DKMS" >> $SSH_CONFIG_FILE
+echo "SetEnv IMS_JOB_ID=$IMS_JOB_ID IMS_ARCH=$BUILD_ARCH IMS_DKMS_ENABLED=$JOB_ENABLE_DKMS" >> $SSHD_CONFIG_FILE
 
 # Start the SSH server daemon
-/usr/sbin/sshd -E /etc/cray/ims/sshd.log -f $SSH_CONFIG_FILE
+/usr/sbin/sshd -E /etc/cray/ims/sshd.log -f $SSHD_CONFIG_FILE
 
 # don't spam the log with waiting on user
 set +x
@@ -112,6 +168,29 @@ done
 # enable logging for the final packaging
 set -x
 echo on
+
+# if dkms was used, unmount the extra dirs before packaging
+if [ "$is_dkms" = "true" ]; then
+  echo "Unmounting system directories"
+  if umount /mnt/image/image-root/sys; then
+    echo "Unmounted /sys"
+  else
+    echo "Failed to unmount /sys"
+  fi
+  if umount /mnt/image/image-root/proc; then
+    echo "Unmounted /proc"
+  else
+    echo "Failed to unmount /proc"
+  fi
+  if umount /mnt/image/image-root/dev; then
+    echo "Unmounted /dev"
+  else
+    echo "Failed to unmount /dev"
+  fi
+fi
+
+# restore the original resolv.conf if there was one
+restore_resolv
 
 # if successful, package up the results into a squashfs file to transfer back to worker node
 if [ ! -f "$USER_SIGNAL_FILE_FAILED" ]; then

@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2019-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2019-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -27,5 +27,5 @@
 #     /scripts/fetch-recipe.sh /mnt/image/recipe http://example.com/path/to/recipe.tgz
 
 source /scripts/helper.sh
-python3 /scripts/fetch.py --recipe "$@"
+python3 /scripts/fetch.py --recipe True "$@"
 fail_if_error "Downloading recipe"
