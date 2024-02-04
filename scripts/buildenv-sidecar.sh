@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2022, 2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -92,8 +92,8 @@ setup_user_shell() {
     # Set the permissions on the folder holding the keys
     chmod 600 /etc/cray/ims
 
-    # Change signal location if user if jailed
-    if [ "$SSH_JAIL" = "True" ]
+    # Change signal location if user if jailed and not running on remote
+    if [ "$SSH_JAIL" = "True" -a "$REMOTE_BUILD_NODE" = ""]
     then
         SIGNAL_FILE_COMPLETE=$IMAGE_ROOT_PARENT/image-root/tmp/complete
         SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/image-root/tmp/failed
