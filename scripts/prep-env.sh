@@ -38,6 +38,12 @@ function prep_remote_build() {
 
     echo "Configuring remote job on host: $REMOTE_BUILD_NODE"
 
+    # set the arch on this job
+    PODMAN_ARCH="linux/amd64"
+    if [ "$BUILD_ARCH" == "aarch64" ]; then
+        PODMAN_ARCH="linux/arm64"
+    fi
+
     # the presence of this dir will serve as notification there is a job underway on this remote node 
     ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "mkdir -p /tmp/ims_${IMS_JOB_ID}/"
 
@@ -62,7 +68,7 @@ function prep_remote_build() {
     (echo "cat <<EOF" ; cat Dockerfile.remote ; echo EOF ) | sh > Dockerfile
 
     # build the docker image
-    podman build -t ims-remote-${IMS_JOB_ID}:1.0.0 .
+    podman build --platform ${PODMAN_ARCH} -t ims-remote-${IMS_JOB_ID}:1.0.0 .
     RC=$?
     if [[ ! $RC ]]; then
       echo "Remote image build failed with error code: $RC"
