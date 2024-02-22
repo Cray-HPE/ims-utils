@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2024-02-22
+### Dependencies
+- Bump `kubernetes` from 11.0.0 to 22.6.0 to match CSM 1.6 Kubernetes version
+
 ## [2.11.0] - 2023-09-15
 ### Changed
 - Disabled concurrent Jenkins builds on same branch/commit

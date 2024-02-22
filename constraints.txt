@@ -9,7 +9,8 @@ idna==2.8
 ims-python-helper==0.0.0-imspython
 Jinja2==2.10.3
 jmespath==0.9.5
-kubernetes==11.0.0
+# CSM 1.6 uses Kubernetes 1.22, so use client v22.x to ensure compatability
+kubernetes==22.6.0
 MarkupSafe<2.1.0
 oauthlib==2.1.0
 pyasn1==0.4.8
