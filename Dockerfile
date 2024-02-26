@@ -43,6 +43,7 @@ RUN apk add --upgrade --no-cache apk-tools \
             libc-dev \
             podman \
             openssh \
+            bash \
         && apk -U upgrade --no-cache \
         &&  rm -rf \
            /var/cache/apk/* \
