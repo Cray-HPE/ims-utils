@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # MIT License
 #
@@ -28,6 +28,38 @@
 
 set -x
 source /scripts/helper.sh
+
+REMOTE_PORT_FILE=$IMAGE_ROOT_PARENT/remote_port
+REMOTE_PORT=""
+
+function find_free_port {
+    # Set up the regex search to pull the port for each running container
+    # NOTE: expect the single column of output to be like: "4e7d19a33b7e	22/tcp -> 0.0.0.0:2024"
+    re="^(.*)0.0.0.0:(.*)$"
+
+    # get a list of all ports currently in use
+    allPorts=()
+    while read i; do 
+        [[ "${i}" =~ $re ]] && var1="${BASH_REMATCH[1]}" && var2="${BASH_REMATCH[2]}"
+        allPorts+=(${var2})
+    done < <(ssh  -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman port -a")
+
+    # sort the ports
+    IFS=$'\n' allPorts=($(sort <<<"${allPorts[*]}")); unset IFS
+
+    # Find an available port, starting at 2022
+    # NOTE: list is sorted, so first != we can take
+    REMOTE_PORT="2022"
+    for value in "${allPorts[@]}"
+    do
+        if (( REMOTE_PORT != value )); then
+            break
+        else
+            (( ++REMOTE_PORT ))
+            echo "Port ${value} in use, trying the next: ${REMOTE_PORT}"
+        fi
+    done
+}
 
 function prep_remote_build() {
     # prepare the ssh keys to access the remote node
@@ -78,16 +110,46 @@ function prep_remote_build() {
     # Copy docker image to remote node
     podman save ims-remote-${IMS_JOB_ID}:1.0.0 | ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} podman load
     RC=$?
-    if [[ ! $RC ]]; then
-      echo "Copying image to remote node failed"
+    if [[ $RC -ne 0 ]]; then
+      echo "Copying image to remote node failed - check available space on the remote node"
       exit 1
     fi
 
-    # start the image on the remote node
-    # NOTE: this will just run indefinately until a complete flag is created
-    # TODO: for now hard-coded to port 2022 - this only allows ONE customize job per node
-    #          - must add code to look for an open port (ie run podman port -a, parse results)
-    ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman run -p 2022:22 --name ims-${IMS_JOB_ID} --privileged --detach ims-remote-${IMS_JOB_ID}:1.0.0"
+    # There is a faint possiblity another job will start between querying for
+    # open ports and starting the remote container. Add a while loop to keep
+    # trying when the port is in use.
+    while [ true ]; do
+      # find an empty port on the remote node
+      find_free_port
+
+      # start the image on the remote node
+      # NOTE: this will just run indefinately until a complete flag is created
+      ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman run -p ${REMOTE_PORT}:22 --name ims-${IMS_JOB_ID} --privileged --detach ims-remote-${IMS_JOB_ID}:1.0.0"
+
+      # if the ssh command failed
+      RC=$?
+      if [[ RC -eq 255 ]]; then
+        echo "Connection issue with remote host - starting remote job failed"
+        exit 1
+      elif [[ RC -eq 126 ]]; then
+        # RC=126 means that the bind failed due to port already in use
+        echo "Warning: Empty port failed to start job - trying again. RC: ${rc}"
+
+        # since this is a named container, we need to remove the failed container before trying again
+        ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman rm ims-${IMS_JOB_ID}"
+        sleep 5
+      elif [[ RC -ne 0 ]]; then
+        # failed for some other reason - bail
+        echo "Error - unknown problem starting remote container. RC: ${rc} - job failed"
+        exit 1
+      else
+        break
+      fi
+
+    done
+
+    # write port to shared file so sshd container can pick it up
+    echo "${REMOTE_PORT}" > "${REMOTE_PORT_FILE}"
 }
 
 # configure for remote build
