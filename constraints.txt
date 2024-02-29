@@ -6,7 +6,7 @@ chardet==3.0.4
 docutils==0.14
 google-auth==1.6.3
 idna==2.8
-ims-python-helper==2.16.0
+ims-python-helper==0.0.0-imspython
 Jinja2==2.10.3
 jmespath==0.9.5
 kubernetes==11.0.0
