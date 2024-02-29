@@ -1,6 +1,5 @@
 # Only use Cray-procured packages
-# TODO - revert this before final merge!!!
---extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/unstable
+--extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple
 --trusted-host artifactory.algol60.net
 -c constraints.txt
 
