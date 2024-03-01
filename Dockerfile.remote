@@ -1,8 +1,7 @@
-#! /usr/bin/env python3
 #
 # MIT License
 #
-# (C) Copyright 2019-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,12 +21,25 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-# Author: Eric Cozzi
 
-from ims_python_helper.build_ca_rpm import build_ca_rpm
+# Dockerfile for IMS remote customization jobs
 
-def main():
-    build_ca_rpm()
+# Start with the ims-sshd image as it will have most of the tools needed
+FROM registry.local/$IMS_SSHD_IMAGE as base
 
-if __name__ == "__main__":
-    main()
+COPY /scripts/remote_customize_entrypoint.sh /entrypoint.sh
+COPY /etc/cray/ca/certificate_authority.crt /etc/cray/ca/certificate_authority.crt
+COPY /etc/admin-client-auth /etc/admin-client-auth
+COPY /mnt/image/image.sqsh /data/
+COPY /config/sshd_config /etc/cray/ims/sshd_config
+COPY /root/.ssh/id_ecdsa.pub /etc/cray/ims/authorized_keys
+
+# Copy in env vars needed for the remote job run
+ENV OAUTH_CONFIG_DIR=$OAUTH_CONFIG_DIR
+ENV BUILD_ARCH=$BUILD_ARCH
+ENV IMS_JOB_ID=$IMS_JOB_ID
+ENV IMAGE_ROOT_PARENT=$IMAGE_ROOT_PARENT
+ENV SSH_JAIL=$SSH_JAIL
+ENV JOB_ENABLE_DKMS=$JOB_ENABLE_DKMS
+
+ENTRYPOINT ["/entrypoint.sh"]
