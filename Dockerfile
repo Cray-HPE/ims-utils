@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -41,6 +41,9 @@ RUN apk add --upgrade --no-cache apk-tools \
             gcc \
             python3-dev \
             libc-dev \
+            podman \
+            openssh \
+            bash \
         && apk -U upgrade --no-cache \
         &&  rm -rf \
            /var/cache/apk/* \
@@ -62,3 +65,4 @@ RUN --mount=type=secret,id=netrc,target=/root/.netrc \
 
 COPY scripts/* /scripts/
 COPY config/* /config/
+COPY Dockerfile.remote /Dockerfile.remote
