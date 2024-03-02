@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CASMCMS-8818 - ssh key injection into jobs.
 - CASMCMS-8897 - changes for aarch64 remote build.
 - CASMCMS-8895 - allow multiple concurrent remote customize jobs.
+- CASMCMS-8923 - better cleanup on unexpected exit.
 
 ## [2.12.0] - 2024-02-22
 ### Dependencies
