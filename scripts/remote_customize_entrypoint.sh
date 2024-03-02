@@ -159,6 +159,9 @@ set +x
 echo off
 echo "Waiting for signal file"
 
+# set up trap for termination signals
+trap "echo TERM; exit 1" SIGTERM SIGINT
+
 # Wait for the user to signal they are done
 until [ -f "$USER_SIGNAL_FILE_COMPLETE" ] || [ -f "$USER_SIGNAL_FILE_FAILED" ]
 do
