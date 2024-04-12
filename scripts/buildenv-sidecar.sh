@@ -93,7 +93,7 @@ setup_user_shell() {
     chmod 600 /etc/cray/ims
 
     # Change signal location if user if jailed and not running on remote
-    if [ "$SSH_JAIL" = "True" -a "$REMOTE_BUILD_NODE" = ""]
+    if [ "$SSH_JAIL" = "True" -a -z "$REMOTE_BUILD_NODE"]
     then
         SIGNAL_FILE_COMPLETE=$IMAGE_ROOT_PARENT/image-root/tmp/complete
         SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/image-root/tmp/failed
@@ -158,10 +158,10 @@ setup_resolv() {
     local IMAGE_ROOT_DIR=$1
     local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
     local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
-    if [ -f "$IMAGE_ROOT_RESOLV" ]; then
+    if [ -f "$IMAGE_ROOT_RESOLV" -o -L "$IMAGE_ROOT_RESOLV" ]; then
         mv "$IMAGE_ROOT_RESOLV" "$TMP_RESOLV"
     fi
-    cp /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
+    cp --remove-destination /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
 }
 
 restore_resolv() {
@@ -170,7 +170,7 @@ restore_resolv() {
     local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
     local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
     rm "$IMAGE_ROOT_RESOLV"
-    if [ -f "$TMP_RESOLV" ]; then
+    if [ -f "$TMP_RESOLV" -o -L "$TMP_RESOLV" ]; then
         mv "$TMP_RESOLV" "$IMAGE_ROOT_RESOLV"
     fi
 }
@@ -200,13 +200,19 @@ case "$IMS_ACTION" in
         fi
         ;;
     customize)
-        # copy ca root key into the image before user shell
-        copy_ca_root_key "$IMAGE_ROOT_PARENT/image-root"
-        setup_resolv "$IMAGE_ROOT_PARENT/image-root"
+        # copy ca root key into the image before user shell if running locally
+        if [[ -z "${REMOTE_BUILD_NODE}" ]]; then
+            copy_ca_root_key "$IMAGE_ROOT_PARENT/image-root"
+            setup_resolv "$IMAGE_ROOT_PARENT/image-root"
+        fi
 
         echo "Running user shell for customize action"
         setup_user_shell
-        restore_resolv "$IMAGE_ROOT_PARENT/image-root"
+        
+        # only restore the resolv file if running locally
+        if [[ -z "${REMOTE_BUILD_NODE}" ]]; then
+            restore_resolv "$IMAGE_ROOT_PARENT/image-root"
+        fi
 
         if [ -f "$SIGNAL_FILE_FAILED" ]; then
             echo "Customization of image root marked as failed. A new IMS image will not be created."

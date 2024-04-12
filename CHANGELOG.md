@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.1] - 2024-04-12
+### Changed
+- CASMTRIAGE-6885 - fix etc/resolv.conf resolution when it is a broken symlink.
+
 ## [2.13.0] - 2024-03-01
 ### Added
 - CASMCMS-8821 - add support for remote build jobs.
