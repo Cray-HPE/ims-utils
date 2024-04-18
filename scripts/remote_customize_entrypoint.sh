@@ -41,10 +41,12 @@ setup_resolv() {
     # Copy the container's /etc/resolv.conf to the image root for customization
     local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
     local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
-    if [ -f "$IMAGE_ROOT_RESOLV" ]; then
+    if [ -f "$IMAGE_ROOT_RESOLV" -o -L "$IMAGE_ROOT_RESOLV" ]; then
         mv "$IMAGE_ROOT_RESOLV" "$TMP_RESOLV"
+    else
+        echo "Did not find an existing /etc/resolv.conf file"
     fi
-    cp /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
+    cp --remove-destination /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
 }
 
 restore_resolv() {
@@ -52,7 +54,7 @@ restore_resolv() {
     local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
     local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
     rm "$IMAGE_ROOT_RESOLV"
-    if [ -f "$TMP_RESOLV" ]; then
+    if [ -f "$TMP_RESOLV" -o -L "$TMP_RESOLV" ]; then
         mv "$TMP_RESOLV" "$IMAGE_ROOT_RESOLV"
     fi
 }
@@ -108,6 +110,10 @@ fi
 # unpack the image file
 mkdir -p $IMAGE_ROOT_PARENT
 unsquashfs -f -d $IMAGE_ROOT_DIR /data/image.sqsh
+
+# clear any signal flags that were left in the image
+rm $USER_SIGNAL_FILE_FAILED
+rm $USER_SIGNAL_FILE_COMPLETE
 
 # Copy cray certs into image
 copy_ca_root_key
@@ -196,10 +202,11 @@ fi
 restore_resolv
 
 # if successful, package up the results into a squashfs file to transfer back to worker node
-if [ ! -f "$USER_SIGNAL_FILE_FAILED" ]; then
-  # Remove the successful signal file and put failed flag in place in case squash fails
+if [ -f "$USER_SIGNAL_FILE_COMPLETE" ]; then
+  # Remove the signal flags before squash and put failed flag in place in case squash fails
   # NOTE: the sshd entrypoint script will be waiting for $SIGNAL_FILE_REMOTE_EXITING
-  rm $SIGNAL_FILE_COMPLETE
+  rm $USER_SIGNAL_FILE_FAILED
+  rm $USER_SIGNAL_FILE_COMPLETE
   touch $SIGNAL_FILE_FAILED
 
   # Make the squashfs formatted archive to transfer results back to job
@@ -215,6 +222,10 @@ if [ ! -f "$USER_SIGNAL_FILE_FAILED" ]; then
     rm $SIGNAL_FILE_FAILED
     touch $SIGNAL_FILE_COMPLETE
   fi
+else
+  # failed so set the correct signal files
+  rm $USER_SIGNAL_FILE_FAILED
+  touch $SIGNAL_FILE_FAILED
 fi
 
 # Signal that this is finished
