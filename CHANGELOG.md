@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- CASMCMS-8022 - update python dependencies to most recent versions. 
+| Package               | From       | To       |
+|-----------------------|------------|----------|
+| `boto3`               | 1.12.49    | 1.34.114 |
+| `botocore`            | 1.15.49    | 1.34.114 |
+| `cachetools`          | 3.0.0      | 5.3.3    |
+| `certifi`             | 2019.11.28 | 2024.2.2 |
+| `chardet`             | 3.0.4      | 5.2.0    |
+| `docutils`            | 0.14       | 0.21.2   |
+| `google-auth`         | 1.6.3      | 2.29.0   |
+| `idna`                | 2.8        | 3.7      |
+| `Jinja2`              | 2.10.3     | 3.1.4    |
+| `jmespath`            | 0.9.5      | 1.0.1    |
+| `MarkupSafe`          | 1.1.1      | 2.1.5    |
+| `oauthlib`            | 2.1.0      | 3.2.2    |
+| `pyasn1`              | 0.4.8      | 0.6.0    |
+| `pyasn1-modules`      | 0.2.8      | 0.4.0    |
+| `requests`            | 2.23.0     | 2.31.0   |
+| `requests-oauthlib`   | 1.0.0      | 1.3.1    |
+| `rsa`                 | 4.7.2      | 4.9      |
+| `s3transfer`          | 0.3.7      | 0.10.1   |
+| `six`                 | 1.15.0     | 1.16.0   |
+| `urllib3`             | 1.25.11    | 1.26.18  |
+| `websocket-client`    | 0.54.0     | 1.8.0    |
+
 ## [2.13.1] - 2024-04-12
 ### Changed
 - CASMTRIAGE-6885 - fix etc/resolv.conf resolution when it is a broken symlink.
