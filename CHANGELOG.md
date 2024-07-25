@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- Resolve CVES:
+  - Bump `certifi` from 2019.11.28 to 2023.7.22
+  - Require `setuptools` >= 70.0
+
 ## [2.13.1] - 2024-04-12
 ### Changed
 - CASMTRIAGE-6885 - fix etc/resolv.conf resolution when it is a broken symlink.
