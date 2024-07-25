@@ -60,7 +60,7 @@ pipeline {
                     //gv = sh(returnStdout: true, script: "gitversion /version 2>&1").trim().split('.')
                     // gv = sh(returnStdout: true, script: "gitversion /version 2>&1 | head -1 | cut -d. -f1")
                     //gv = sh(returnStdout: true, script: "gitversion /version 2>&1")
-                    gv = sh(returnStdout: true, script: "gitversion /version 2>&1").trim().tokenize('.')[0] as integer
+                    gv = sh(returnStdout: true, script: "gitversion /version 2>&1").trim().tokenize('.')[0].toInteger()
                     echo "Base version is ${gv}"
                     //gvt = gv.trim()
                     //echo "Base version trimmed is ${gvt}"
