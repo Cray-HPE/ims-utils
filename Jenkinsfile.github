@@ -65,6 +65,8 @@ pipeline {
                     echo "Base version trimmed is ${gvt}"
                     tok = gvt.tokenize('.')[0]
                     echo "Token is ${tok}"
+                    int tokint = tok as integer
+                    echo "Token int is ${tokint}"
                     intext = readFile('GitVersion.yml')
                     reptext = intext.replaceAll(/(^|\n)([^\S\r\n]*)tag:/, '$1$2label:')
                     reptext = reptext.replaceAll(/(^|\n)([^\S\r\n]*)continuous-delivery-fallback-tag:/, '$1$2continuous-delivery-fallback-label:')
