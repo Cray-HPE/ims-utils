@@ -58,7 +58,7 @@ pipeline {
                 // If running gitversion >= 6, convert config file
                 script {
                     //gv = sh(returnStdout: true, script: "gitversion /version 2>&1").trim().split('.')
-                    gv = sh(returnStdout: true, script: "gitversion /version 2>&1")
+                    gv = sh(returnStdout: true, script: "gitversion /version 2>&1 | head -1 | cut -d. -f1")
                     echo "Base version is ${gv}"
                     //intext = readFile('GitVersion.yml')
                     //reptext = intext.replaceAll(/^([^\S\r\n]*)tag:/,'$1label:')
