@@ -61,7 +61,7 @@ pipeline {
                     echo "Base version is ${gv}"
                     intext = readFile('GitVersion.yml')
                     //reptext = intext.replaceAll(/^([^\S\r\n]*tag):/,'$1label:')
-                    reptext = intext.replaceAll(/tag:/, 'label:')
+                    reptext = intext.replaceAll(/^[^\S\r\n]*tag:/, 'label:')
                     echo "${reptext}"
                     //writeFile(file: 'GitVersion.yml2', text: )
                 }
