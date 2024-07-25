@@ -24,7 +24,7 @@
 # Cray Image Management Service image build environment utilities Dockerfile
 #
 
-FROM artifactory.algol60.net/docker.io/alpine:3.15 as base
+FROM artifactory.algol60.net/docker.io/library/alpine:3.15 as base
 
 # Add utilities that are required for this command
 WORKDIR /
