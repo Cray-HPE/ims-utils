@@ -58,7 +58,7 @@ pipeline {
                 // If running gitversion >= 6, convert config file
                 script {
                     text = readFile('GitVersion.yml')
-                    newtext = text.replaceAll(/^(\h+tag):/,"\1label:")
+                    newtext = text.replaceAll(/^(\h+tag):/,"$1label:")
                     writeFile(file: 'GitVersion.yml', text: newtext)
                 }
                 sh 'cat GitVersion.yml'
