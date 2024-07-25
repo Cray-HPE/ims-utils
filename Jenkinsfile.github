@@ -57,10 +57,10 @@ pipeline {
             steps {
                 // If running gitversion >= 6, convert config file
                 script {
-                    gv = sh(returnStdout: false, returnStderr: true, script: "gitversion /version").trim().split('.')
+                    gv = sh(returnStdout: true, script: "gitversion /version 2>&1").trim().split('.')
                     echo "Base version is ${gv}"
                     intext = readFile('GitVersion.yml')
-                    //reptext = intext.replaceAll(/^([^\S\r\n]+tag):/,'$1label:')
+                    //reptext = intext.replaceAll(/^([^\S\r\n]*tag):/,'$1label:')
                     reptext = intext.replaceAll(/tag:/, 'label:')
                     echo "${reptext}"
                     //writeFile(file: 'GitVersion.yml2', text: )
