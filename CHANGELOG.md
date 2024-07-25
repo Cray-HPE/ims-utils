@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolve CVES:
   - Bump `certifi` from 2019.11.28 to 2023.7.22
   - Require `setuptools` >= 70.0
+  - Use CSM re-built Alpine container as base of Docker image
 
 ## [2.13.1] - 2024-04-12
 ### Changed
