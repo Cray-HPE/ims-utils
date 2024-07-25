@@ -57,15 +57,16 @@ pipeline {
             steps {
                 // If running gitversion >= 6, convert config file
                 script {
-                    gv = sh(returnStdout: true, script: "gitversion /version 2>&1").trim().split('.')
-                    echo "Base version is ${gv}"
-                    intext = readFile('GitVersion.yml')
+                    //gv = sh(returnStdout: true, script: "gitversion /version 2>&1").trim().split('.')
+                    //echo "Base version is ${gv}"
+                    //intext = readFile('GitVersion.yml')
                     //reptext = intext.replaceAll(/^([^\S\r\n]*)tag:/,'$1label:')
-                    reptext = intext.replaceAll(/[^\S\r\n]*tag:/, 'label:')
-                    echo "${reptext}"
+                    //reptext = intext.replaceAll(/[^\S\r\n]*tag:/, 'label:')
+                    //echo "${reptext}"
                     //writeFile(file: 'GitVersion.yml2', text: )
+                    ant.replaceregexp(file: 'GitVersion.yml', match: /tag:/, replace: 'label:')
                 }
-                sh 'cat GitVersion.yml2'
+                sh 'cat GitVersion.yml'
                 // sh 'gitversion /version | grep -E "^([6-9]|[1-9][0-9]+)[.]" && sed -i -e "s/^\([[:space:]]\+continuous-delivery-fallback-\)tag:/\1label:/" -e "s/^\([[:space:]]\+\)tag\(-number-pattern:\)/\1label\2/" -e "s/^\([[:space:]]\+\)tag:/\1label:/" GitVersion.yml'
                 // This function is defined in cms-meta-tools:vars/setVersionFiles.groovy
                 setVersionFiles()
