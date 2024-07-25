@@ -56,10 +56,12 @@ pipeline {
         stage("Set Versions") {
             steps {
                 // If running gitversion >= 6, convert config file
-                f = new File('GitVersion.yml')
-                text = f.text
-                f.withWriter { w ->
-                  w << text.replaceAll("^([[:space:]]+tag):","\1label:")
+                script {
+                    f = new File('GitVersion.yml')
+                    text = f.text
+                    f.withWriter { w ->
+                        w << text.replaceAll("^([[:space:]]+tag):","\1label:")
+                    }
                 }
                 sh 'cat GitVersion.yml'
                 // sh 'gitversion /version | grep -E "^([6-9]|[1-9][0-9]+)[.]" && sed -i -e "s/^\([[:space:]]\+continuous-delivery-fallback-\)tag:/\1label:/" -e "s/^\([[:space:]]\+\)tag\(-number-pattern:\)/\1label\2/" -e "s/^\([[:space:]]\+\)tag:/\1label:/" GitVersion.yml'
