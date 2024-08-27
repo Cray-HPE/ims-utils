@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- CASMCMS-9040 - change permissions on image config files after recipe build.
+
 ## [2.13.2] - 2024-07-25
 ### Dependencies
 - Resolve CVES:
