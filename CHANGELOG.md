@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CSM 1.6 moved to Kubernetes 1.24, so use client v24.x to ensure compatability
 - Simplify how `ims-python-helper` major/minor version is pinned
 
+### Changed
+- CASMCMS-9040 - change permissions on image config files after recipe build.
+
 ## [2.13.2] - 2024-07-25
 ### Dependencies
 - Resolve CVES:

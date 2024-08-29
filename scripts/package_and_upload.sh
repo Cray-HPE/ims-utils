@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -75,6 +75,22 @@ check_image_artifact_exists() {
 
 check_image_artifact_exists "$IMAGE_ROOT_DIR/boot/$KERNEL_FILENAME"
 check_image_artifact_exists "$IMAGE_ROOT_DIR/boot/$INITRD_FILENAME"
+
+# Change ownership and permissions on /image dir if it exists.
+#  This dir contains config files that may have sensative information
+#  in them and should only be readable by root.
+if [[ -d ${IMAGE_ROOT_DIR}/image ]]; then
+  # change read/write permissions of dir to root only
+  chown root ${IMAGE_ROOT_DIR}/image
+  chmod 700 ${IMAGE_ROOT_DIR}/image
+
+  # change files in the dir to root ownership and only rw for root
+  chown root ${IMAGE_ROOT_DIR}/image/*
+  chmod 600 ${IMAGE_ROOT_DIR}/image/*
+
+  # change the .sh file to rwx for root
+  chmod 700 ${IMAGE_ROOT_DIR}/image/*.sh
+fi
 
 # Make the squashfs formatted archive
 time mksquashfs "$IMAGE_ROOT_DIR" "$IMAGE_ROOT_PARENT/$IMAGE_ROOT_ARCHIVE_NAME.sqsh"
