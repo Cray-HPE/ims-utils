@@ -6,11 +6,11 @@ chardet==3.0.4
 docutils==0.14
 google-auth==1.6.3
 idna==2.8
-ims-python-helper==0.0.0-imspython
+ims-python-helper>=3.0,<3.1
 Jinja2==2.10.3
 jmespath==0.9.5
-# CSM 1.6 uses Kubernetes 1.22, so use client v22.x to ensure compatability
-kubernetes==22.6.0
+# CSM 1.6 moved to Kubernetes 1.24, so use client v24.x to ensure compatability
+kubernetes>=24.2,<24.3
 MarkupSafe<2.1.0
 oauthlib==2.1.0
 pyasn1==0.4.8
