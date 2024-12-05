@@ -122,7 +122,7 @@ copy_ca_root_key
 setup_resolv
 
 # If setting up for dkms permissions, do that now
-echo "JOB_ENABLE_DMKS: $JOB_ENABLE_DKMS"
+echo "JOB_ENABLE_DKMS: $JOB_ENABLE_DKMS"
 is_dkms=$(echo $JOB_ENABLE_DKMS | tr '[:upper:]' '[:lower:]')
 echo "is_dkms=$is_dkms"
 if [ "$is_dkms" = "true" ]; then
