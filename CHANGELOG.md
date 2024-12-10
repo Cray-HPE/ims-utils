@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ## Fixed
 - CASMCMS-9226 - fix mis-spelling.
+- CASMCMS-9037 - remove parts of openssh that are not being used for security.
 
 ## [2.14.0] - 2024-08-29
 ### Dependencies

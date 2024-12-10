@@ -42,7 +42,7 @@ RUN apk add --upgrade --no-cache apk-tools \
             python3-dev \
             libc-dev \
             podman \
-            openssh \
+            openssh-client \
             bash \
         && apk -U upgrade --no-cache \
         &&  rm -rf \
