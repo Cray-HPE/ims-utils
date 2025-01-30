@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- CASMCMS-8271: Updated ims-python-helper version
+
 ## [2.15.0] - 2024-12-10
 ## Fixed
 - CASMCMS-9226 - fix mis-spelling.

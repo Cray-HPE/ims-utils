@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2019-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2019-2024, 2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -42,14 +42,14 @@ def main():
     group.add_argument('--image', action='store_true')
     parser.add_argument('unpack')
     parser.add_argument('path')
-    parser.add_argument('url')
+    parser.add_argument('s3_key')
     args = parser.parse_args()
 
     if args.recipe:
-        FetchRecipe(args.path, args.url).run()
+        FetchRecipe(args.path, args.s3_key).run()
     elif args.image:
         b_unpack = args.unpack.lower() in ['true', '1', 't', 'y']
-        FetchImage(args.path, args.url).run(b_unpack)
+        FetchImage(args.path, args.s3_key).run(b_unpack)
 
 if __name__ == "__main__":
     main()

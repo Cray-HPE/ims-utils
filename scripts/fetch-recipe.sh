@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2019-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2019-2024, 2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,7 +24,7 @@
 #
 # Prepares the build environment used for creating an image root.
 #   Usage:
-#     /scripts/fetch-recipe.sh /mnt/image/recipe http://example.com/path/to/recipe.tgz
+#     /scripts/fetch-recipe.sh /mnt/image/recipe <s3_key>
 
 source /scripts/helper.sh
 python3 /scripts/fetch.py --recipe True "$@"
