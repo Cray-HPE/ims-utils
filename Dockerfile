@@ -30,6 +30,7 @@ ARG MNT_DIR=/mnt/image
 ARG USER=nobody
 ARG GROUP=nobody
 RUN mkdir -p $MNT_DIR
+RUN touch $MNT_DIR/image.sqsh
 # Add utilities that are required for this command
 WORKDIR /
 COPY requirements.txt constraints.txt /
