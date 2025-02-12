@@ -26,11 +26,9 @@
 
 FROM artifactory.algol60.net/docker.io/library/alpine:3.15 as base
 
-ARG MNT_DIR=/mnt/image
-ARG USER=nobody
-ARG GROUP=nobody
-RUN mkdir -p $MNT_DIR
-RUN touch $MNT_DIR/image.sqsh
+# Adding permission for nobody user to run chmod command
+RUN echo "nobody ALL=(ALL) NOPASSWD: /bin/chmod /mnt/image" >> /etc/sudoers
+
 # Add utilities that are required for this command
 WORKDIR /
 COPY requirements.txt constraints.txt /
@@ -48,6 +46,7 @@ RUN apk add --upgrade --no-cache apk-tools \
             libc-dev \
             podman \
             openssh-client \
+            sudo \
             bash \
         && apk -U upgrade --no-cache \
         &&  rm -rf \
@@ -71,11 +70,3 @@ RUN --mount=type=secret,id=netrc,target=/root/.netrc \
 COPY scripts/* /scripts/
 COPY config/* /config/
 COPY Dockerfile.remote /Dockerfile.remote
-
-# Update and secure permissions required to run as non-root
-RUN chown -R $GROUP:$USER $MNT_DIR
-RUN chmod -R g+rwx $MNT_DIR
-RUN chmod -R o+rwx $MNT_DIR
-
-# Switch the user to non-root
-USER $USER
