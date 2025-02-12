@@ -75,9 +75,7 @@ COPY Dockerfile.remote /Dockerfile.remote
 # Update and secure permissions required to run as non-root
 RUN chown -R $GROUP:$USER $MNT_DIR
 RUN chmod -R g+rwx $MNT_DIR
-RUN chmod -R o-rwx $MNT_DIR
+RUN chmod -R o+rwx $MNT_DIR
 
 # Switch the user to non-root
 USER $USER
-
-CMD ["sleep", "600"]
