@@ -29,6 +29,7 @@ FROM artifactory.algol60.net/docker.io/library/alpine:3.15 as base
 ARG MNT_DIR=/mnt/image
 ARG USER=nobody
 ARG GROUP=nobody
+RUN mkdir -p $MNT_DIR
 # Add utilities that are required for this command
 WORKDIR /
 COPY requirements.txt constraints.txt /
