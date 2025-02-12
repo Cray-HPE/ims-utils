@@ -79,3 +79,5 @@ RUN chmod -R o-rwx $MNT_DIR
 
 # Switch the user to non-root
 USER $USER
+
+CMD ["sleep", "600"]
