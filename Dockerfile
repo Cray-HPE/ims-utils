@@ -66,3 +66,5 @@ RUN --mount=type=secret,id=netrc,target=/root/.netrc \
 COPY scripts/* /scripts/
 COPY config/* /config/
 COPY Dockerfile.remote /Dockerfile.remote
+# Switch the user to non-root
+USER nobody
