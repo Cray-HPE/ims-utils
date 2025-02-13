@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,7 +24,7 @@
 # Cray Image Management Service image build environment utilities Dockerfile
 #
 
-FROM artifactory.algol60.net/docker.io/library/alpine:3.15 as base
+FROM artifactory.algol60.net/docker.io/library/alpine:3.21 as base
 
 # Add utilities that are required for this command
 WORKDIR /
