@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.16.2] - 2025-03-04
+### Dependencies
+- CASMTRIAGE-7899: Update installed packages to make rpmbuild work.
+
 ## [2.16.1] - 2025-02-27
 ### Dependencies
 - CASMTRIAGE-7899: Bump dependency versions to work with Python 3.12
