@@ -44,6 +44,8 @@ RUN apk add --upgrade --no-cache apk-tools \
             podman \
             openssh-client \
             bash \
+            findutils \
+            grep \
         && apk -U upgrade --no-cache \
         &&  rm -rf \
            /var/cache/apk/* \
@@ -52,6 +54,11 @@ RUN apk add --upgrade --no-cache apk-tools \
         && mkdir -p \
            /scripts \
            /config
+
+# There is a problem with the script brp-remove-la-files in alpine where
+#  it uses the wrong 'force' option for the rm installed here. Modify
+#  the script so the rpmbuild command will work in build-ca-rpm
+RUN sed -i 's/--force/-f/g' /usr/lib/rpm/brp-remove-la-files
 
 ENV VIRTUAL_ENV=/scripts/venv
 RUN python3 -m venv $VIRTUAL_ENV
