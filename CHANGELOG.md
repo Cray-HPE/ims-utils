@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.16.3] - 2025-05-01
+### Fixed
+- CASMTRIAGE-8161: setting up certs failing with `update-ca-certificates: command not found`
+
 ## [2.16.2] - 2025-03-04
 ### Dependencies
 - CASMTRIAGE-7899: Update installed packages to make rpmbuild work.

@@ -46,6 +46,7 @@ RUN apk add --upgrade --no-cache apk-tools \
             bash \
             findutils \
             grep \
+            ca-certificates \
         && apk -U upgrade --no-cache \
         &&  rm -rf \
            /var/cache/apk/* \
