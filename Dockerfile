@@ -46,6 +46,8 @@ RUN apk add --upgrade --no-cache apk-tools \
             bash \
             findutils \
             grep \
+            ca-certificates \
+            fuse-overlayfs \
         && apk -U upgrade --no-cache \
         &&  rm -rf \
            /var/cache/apk/* \
@@ -59,6 +61,8 @@ RUN apk add --upgrade --no-cache apk-tools \
 #  it uses the wrong 'force' option for the rm installed here. Modify
 #  the script so the rpmbuild command will work in build-ca-rpm
 RUN sed -i 's/--force/-f/g' /usr/lib/rpm/brp-remove-la-files
+# To resolve issue overlay is not supported over overlayfs CASMTRIAGE-8161
+RUN sed -i 's/#mount_program/mount_program/' /etc/containers/storage.conf
 
 ENV VIRTUAL_ENV=/scripts/venv
 RUN python3 -m venv $VIRTUAL_ENV
