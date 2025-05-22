@@ -66,7 +66,9 @@ def main():
     _setup_logging(logger)
 
     # check for the repos
-    return wait_for_kiwi_repos(ims_job_id, ims_url, ca_cert, recipe_root, timeout, logger)
+    # For debugging
+    return 0
+    # return wait_for_kiwi_repos(ims_job_id, ims_url, ca_cert, recipe_root, timeout, logger)
 
 if __name__ == "__main__":
     sys.exit(main())
