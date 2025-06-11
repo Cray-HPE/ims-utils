@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2023-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2023-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -154,7 +154,7 @@ fi
 mkdir -p ~/.ssh
 ssh-keygen -A
 
-# add env vars the incomming users need
+# add env vars the incoming users need
 echo "SetEnv IMS_JOB_ID=$IMS_JOB_ID IMS_ARCH=$BUILD_ARCH IMS_DKMS_ENABLED=$JOB_ENABLE_DKMS" >> $SSHD_CONFIG_FILE
 
 # Start the SSH server daemon

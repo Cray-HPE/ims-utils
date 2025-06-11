@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -96,6 +96,11 @@ function prep_remote_build() {
       exit 1
     fi
 
+    # Add user ssh public key to the remote node access public key
+    # NOTE: /etc/cray/ims/authorized_keys is mounted from the ims job config map
+    # NOTE: used in Dockerfile.remote to set up the ssh server on the remote container
+    cat ~/.ssh/id_ecdsa.pub /etc/cray/authorized_keys >> /root/remote_authorized_keys
+
     # Apply env vars to dockerfile template
     (echo "cat <<EOF" ; cat Dockerfile.remote ; echo EOF ) | sh > Dockerfile
 
@@ -115,7 +120,7 @@ function prep_remote_build() {
       exit 1
     fi
 
-    # There is a faint possiblity another job will start between querying for
+    # There is a faint possibility another job will start between querying for
     # open ports and starting the remote container. Add a while loop to keep
     # trying when the port is in use.
     while [ true ]; do
@@ -123,7 +128,7 @@ function prep_remote_build() {
       find_free_port
 
       # start the image on the remote node
-      # NOTE: this will just run indefinately until a complete flag is created
+      # NOTE: this will just run indefinitely until a complete flag is created
       ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman run -p ${REMOTE_PORT}:22 --name ims-${IMS_JOB_ID} --privileged --detach ims-remote-${IMS_JOB_ID}:1.0.0"
 
       # if the ssh command failed

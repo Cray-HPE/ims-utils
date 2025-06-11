@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.17.0] - 2025-06-10
+### Changed
+- CASMCMS-8939 - better port forwarding for remote jobs.
+
 ## [2.16.3] - 2025-05-01
 ### Fixed
 - CASMTRIAGE-8161: setting up certs failing with `update-ca-certificates: command not found`
