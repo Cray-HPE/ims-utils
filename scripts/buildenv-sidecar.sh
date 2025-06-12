@@ -120,6 +120,9 @@ setup_user_shell() {
         rm "$SIGNAL_FILE_EXITING"
     fi
 
+    # set up cleanup in case this exits unexpectedly
+    trap clean_exit SIGTERM SIGINT
+
     # Give user instructions on how to exit this script
     echo "IMS SSH shell environment is ready."
     echo "To mark this shell as successful, touch the file \"$SIGNAL_FILE_COMPLETE\"."
@@ -151,6 +154,11 @@ setup_user_shell() {
         echo "Found $SIGNAL_FILE_COMPLETE. Removing."
         rm "$SIGNAL_FILE_COMPLETE"
     fi
+}
+
+function clean_exit {
+    echo "Kata container has exited unexpectedly. Cleaning up build environment."
+    set_job_status "error"
 }
 
 setup_resolv() {
