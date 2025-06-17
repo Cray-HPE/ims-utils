@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.18.0] - 2025-06-17
+### Dependencies
+- CASMCMS-9455: Updated ims-python-helper version to 3.2.x
+- CASMCMS-8022:  update python modules
+
+- Bumped dependency patch versions:
+| Package                | From      | To        |
+|------------------------|-----------|-----------|
+| `botocore`             | 1.36.2    | 1.36.26   |
+| `cachetools`           | 3.0.0     | 5.3.3     |
+| `certifi`              | 2023.7.22 | 2025.6.15 |
+| `chardet`              | 3.0.4     | 5.2.0     |
+| `docutils`             | 0.14      | 0.21      |
+| `google-auth`          | 1.6.3     | 2.29.0    |
+| `idna`                 | 2.8       | 3.10.0    |
+| `Jinja2`               | 2.10.3    | 3.1.6     |
+| `jmespath`             | 0.9.5     | 1.0.1     |
+| `MarkupSafe`           | <2.1.0    | 2.1.5     |
+| `oauthlib`             | 2.1.0     | 3.2.2     |
+| `pyasn1`               | 0.4.8     | 0.6.1     |
+| `pyasn1-modules`       | 0.2.8     | 0.4.0     |
+| `requests`             | 2.27.1    | 2.32.4    |
+| `requests-oauthlib`    | 1.0.0     | 2.0.0     |
+| `rsa`                  | 4.7.2     | 4.9       |
+| `s3transfer`           | 0.11.1    | 0.11.3    |
+| `urllib3`              | 1.26.18   | 2.4.0     |
+| `websocket-client`     | 0.54.0    | 1.8.0     |
+
 ## [2.17.0] - 2025-06-10
 ### Changed
 - CASMCMS-8939 - better port forwarding for remote jobs.
