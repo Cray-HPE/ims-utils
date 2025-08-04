@@ -31,6 +31,7 @@ source /scripts/helper.sh
 
 REMOTE_PORT_FILE=$IMAGE_ROOT_PARENT/remote_port
 REMOTE_PORT=""
+FIRST_REMOTE_PORT="2022"
 
 function find_free_port {
     # Set up the regex search to pull the port for each running container
@@ -47,9 +48,9 @@ function find_free_port {
     # sort the ports
     IFS=$'\n' allPorts=($(sort <<<"${allPorts[*]}")); unset IFS
 
-    # Find an available port, starting at 2022
+    # Find an available port, starting at FIRST_REMOTE_PORT
     # NOTE: list is sorted, so first != we can take
-    REMOTE_PORT="2022"
+    REMOTE_PORT=$FIRST_REMOTE_PORT
     for value in "${allPorts[@]}"
     do
         if (( REMOTE_PORT != value )); then
@@ -77,7 +78,15 @@ function prep_remote_build() {
     fi
 
     # the presence of this dir will serve as notification there is a job underway on this remote node 
-    ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "mkdir -p /tmp/ims_${IMS_JOB_ID}/"
+    ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "mkdir -p /tmp/ims_${IMS_JOB_ID}/image/"
+
+    # copy the squashfs file to the remote node
+    scp -o StrictHostKeyChecking=no /mnt/image/image.sqsh root@${REMOTE_BUILD_NODE}:/tmp/ims_${IMS_JOB_ID}/image/image.sqsh
+    RC=$?
+    if [[ $RC -ne 0 ]]; then
+      echo "Copying image to remote node failed - check available space on the remote node"
+      exit 1
+    fi
 
     # Make Cray's CA certificate a trusted system certificate within the container
     # This will not install the CA certificate into the kiwi imageroot.
@@ -91,7 +100,7 @@ function prep_remote_build() {
     fi
     update-ca-certificates
     RC=$?
-    if [[ ! $RC ]]; then
+    if [[ $RC -ne 0 ]]; then
       echo "update-ca-certificates exited with return code: $RC"
       exit 1
     fi
@@ -107,7 +116,7 @@ function prep_remote_build() {
     # build the docker image
     podman build --platform ${PODMAN_ARCH} -t ims-remote-${IMS_JOB_ID}:1.0.0 .
     RC=$?
-    if [[ ! $RC ]]; then
+    if [[ $RC -ne 0 ]]; then
       echo "Remote image build failed with error code: $RC"
       exit 1
     fi
@@ -129,7 +138,12 @@ function prep_remote_build() {
 
       # start the image on the remote node
       # NOTE: this will just run indefinitely until a complete flag is created
-      ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman run -p ${REMOTE_PORT}:22 --name ims-${IMS_JOB_ID} --privileged --detach ims-remote-${IMS_JOB_ID}:1.0.0"
+      #  -p -> port forwarding into the container
+      #  -v -> mount the image root dir into the container
+      #  -name -> name the container so we can remove it later
+      #  --privileged -> needed for dkms operations
+      #  --detach -> run in the background
+      ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman run -p ${REMOTE_PORT}:22 -v /tmp/ims_${IMS_JOB_ID}/image:/mnt/image:U,Z --name ims-${IMS_JOB_ID} --privileged --detach ims-remote-${IMS_JOB_ID}:1.0.0"
 
       # if the ssh command failed
       RC=$?
@@ -142,6 +156,10 @@ function prep_remote_build() {
 
         # since this is a named container, we need to remove the failed container before trying again
         ssh -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman rm ims-${IMS_JOB_ID}"
+
+        # something else may be using the first port podman thinks is free - try the next higher one
+        FIRST_REMOTE_PORT=$((REMOTE_PORT + 1))
+
         sleep 5
       elif [[ RC -ne 0 ]]; then
         # failed for some other reason - bail

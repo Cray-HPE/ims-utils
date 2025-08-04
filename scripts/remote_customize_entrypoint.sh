@@ -23,41 +23,22 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+# common functions
+source /helper.sh
+
 # Entrypoint script for remote customize image job
 # NOTE: this is run from WITHIN the docker image running on the remote build node.
 set -x
 echo on
 
 # Let the root dirs be overridden by arguments to the script
-IMAGE_ROOT_PARENT=${2:-$IMAGE_ROOT_PARENT}
-IMAGE_ROOT_DIR=${IMAGE_ROOT_DIR:-${IMAGE_ROOT_PARENT}/image-root/}
+IMAGE_ROOT_PARENT=${2:-$IMAGE_ROOT_PARENT} # from env when building from dockerfile
+IMAGE_ROOT_DIR=${IMAGE_ROOT_DIR:-${IMAGE_ROOT_PARENT}/image-root}
 
 # set up file locations
 SIGNAL_FILE_REMOTE_EXITING=$IMAGE_ROOT_PARENT/remote_exiting
 
 SSHD_CONFIG_FILE=/etc/cray/ims/sshd_config
-
-setup_resolv() {
-    # Copy the container's /etc/resolv.conf to the image root for customization
-    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
-    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
-    if [ -f "$IMAGE_ROOT_RESOLV" -o -L "$IMAGE_ROOT_RESOLV" ]; then
-        mv "$IMAGE_ROOT_RESOLV" "$TMP_RESOLV"
-    else
-        echo "Did not find an existing /etc/resolv.conf file"
-    fi
-    cp --remove-destination /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
-}
-
-restore_resolv() {
-    # Restore the image root's old /etc/resolv.conf after customization
-    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
-    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
-    rm "$IMAGE_ROOT_RESOLV"
-    if [ -f "$TMP_RESOLV" -o -L "$TMP_RESOLV" ]; then
-        mv "$TMP_RESOLV" "$IMAGE_ROOT_RESOLV"
-    fi
-}
 
 copy_ca_root_key() {
     echo "Copying SMS CA Public Certificate to target image root"
@@ -86,12 +67,12 @@ SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/failed
 USER_SIGNAL_FILE_COMPLETE=$IMAGE_ROOT_PARENT/complete
 USER_SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/failed
 if [ "$SSH_JAIL" = "True" ]; then
-  USER_SIGNAL_FILE_COMPLETE=${IMAGE_ROOT_DIR}tmp/complete
-  USER_SIGNAL_FILE_FAILED=${IMAGE_ROOT_DIR}tmp/failed
+  USER_SIGNAL_FILE_COMPLETE=${IMAGE_ROOT_DIR}/tmp/complete
+  USER_SIGNAL_FILE_FAILED=${IMAGE_ROOT_DIR}/tmp/failed
 fi
 
 # Make Cray's CA certificate a trusted system certificate within the container
-# This will not install the CA certificate into the kiwi imageroot.
+# This will not install the CA certificate into the kiwi image root.
 echo "setting up certs..."
 CA_CERT='/etc/cray/ca/certificate_authority.crt'
 if [[ -e $CA_CERT ]]; then
@@ -102,14 +83,24 @@ else
 fi
 update-ca-certificates
 RC=$?
-if [[ ! $RC ]]; then
+if [[ $RC -ne 0 ]]; then
   echo "update-ca-certificates exited with return code: $RC"
+  touch $SIGNAL_FILE_FAILED
   exit 1
 fi
 
 # unpack the image file
 mkdir -p $IMAGE_ROOT_PARENT
-unsquashfs -f -d $IMAGE_ROOT_DIR /data/image.sqsh
+unsquashfs -f -d $IMAGE_ROOT_DIR ${IMAGE_ROOT_PARENT}/image.sqsh
+RC=$?
+if [[ $RC -ne 0 ]]; then
+  echo "unsquashfs exited with return code: $RC"
+  touch $SIGNAL_FILE_FAILED
+  exit 1
+fi
+
+# remove the original squashfs file to save space
+rm ${IMAGE_ROOT_PARENT}/image.sqsh
 
 # clear any signal flags that were left in the image
 rm $USER_SIGNAL_FILE_FAILED
@@ -119,7 +110,7 @@ rm $USER_SIGNAL_FILE_COMPLETE
 copy_ca_root_key
 
 # Copy the container's resolv.conf to the image root
-setup_resolv
+setup_resolv "$IMAGE_ROOT_DIR"
 
 # If setting up for dkms permissions, do that now
 echo "JOB_ENABLE_DKMS: $JOB_ENABLE_DKMS"
@@ -199,7 +190,7 @@ if [ "$is_dkms" = "true" ]; then
 fi
 
 # restore the original resolv.conf if there was one
-restore_resolv
+restore_resolv "$IMAGE_ROOT_DIR"
 
 # if successful, package up the results into a squashfs file to transfer back to worker node
 if [ -f "$USER_SIGNAL_FILE_COMPLETE" ]; then
@@ -209,12 +200,36 @@ if [ -f "$USER_SIGNAL_FILE_COMPLETE" ]; then
   rm $USER_SIGNAL_FILE_COMPLETE
   touch $SIGNAL_FILE_FAILED
 
+  # Change ownership and permissions on /image dir if it exists.
+  #  This dir contains config files that may have sensitive information
+  #  in them and should only be readable by root.
+  check_image_dir ${IMAGE_ROOT_DIR}
+
+  # copy the boot files to the image root
+  if [[ -d ${IMAGE_ROOT_DIR}/boot ]]; then
+    echo "Copying boot files to image root"
+    if [[ -f ${IMAGE_ROOT_DIR}/boot/${KERNEL_FILENAME} ]]; then
+      echo "Copying kernel file: ${KERNEL_FILENAME} to image root"
+      cp ${IMAGE_ROOT_DIR}/boot/${KERNEL_FILENAME} "${IMAGE_ROOT_PARENT}"
+    fi
+    if [[ -f ${IMAGE_ROOT_DIR}/boot/${INITRD_FILENAME} ]]; then
+      echo "Copying initrd file: ${INITRD_FILENAME} to image root"
+      cp ${IMAGE_ROOT_DIR}/boot/${INITRD_FILENAME} "${IMAGE_ROOT_PARENT}"
+    fi
+    if [[ -f ${IMAGE_ROOT_DIR}/boot/${KERNEL_PARAMETERS_FILENAME} ]]; then
+      echo "Copying initrd file: ${KERNEL_PARAMETERS_FILENAME} to image root"
+      cp ${IMAGE_ROOT_DIR}/boot/${KERNEL_PARAMETERS_FILENAME} "${IMAGE_ROOT_PARENT}"
+    fi
+  else
+    echo "No boot directory found in image root, skipping copy of boot files"
+  fi
+
   # Make the squashfs formatted archive to transfer results back to job
   time mksquashfs "$IMAGE_ROOT_DIR" "$IMAGE_ROOT_PARENT/transfer.sqsh"
   RC=$?
 
   # handle if the squash fails
-  if [[ ! $RC ]]; then
+  if [[ $RC -ne 0 ]]; then
     # Already marked as error - just exit
     echo "ERROR: Squashfs reported an error."
   else
