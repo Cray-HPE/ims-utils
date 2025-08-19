@@ -6,7 +6,7 @@ chardet==5.2.0
 docutils==0.21.0
 google-auth==2.29.0
 idna==3.10.0
-ims-python-helper>=3.2,<3.3
+ims-python-helper>=3.3,<3.4
 Jinja2==3.1.6
 jmespath==1.0.1
 # CSM 1.7 moved to Kubernetes 1.32, so use client v32.x to ensure compatibility
