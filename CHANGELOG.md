@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.20.0] - 2025-10-01
+## Changed
+- CASMCMS-8904 - optimize remote node builds.
+
 ## [2.19.0] - 2025-08-19
 ### Dependencies
 - Update `kubernetes` module to match CSM Kubernetes version

@@ -25,12 +25,12 @@
 # Dockerfile for IMS remote customization jobs
 
 # Start with the ims-sshd image as it will have most of the tools needed
-FROM registry.local/$IMS_SSHD_IMAGE as base
+FROM registry.local/$IMS_SSHD_IMAGE AS base
 
 COPY /scripts/remote_customize_entrypoint.sh /entrypoint.sh
+COPY /scripts/helper.sh /helper.sh
 COPY /etc/cray/ca/certificate_authority.crt /etc/cray/ca/certificate_authority.crt
 COPY /etc/admin-client-auth /etc/admin-client-auth
-COPY /mnt/image/image.sqsh /data/
 COPY /config/sshd_config /etc/cray/ims/sshd_config
 COPY /root/remote_authorized_keys /etc/cray/ims/authorized_keys
 
@@ -41,5 +41,8 @@ ENV IMS_JOB_ID=$IMS_JOB_ID
 ENV IMAGE_ROOT_PARENT=$IMAGE_ROOT_PARENT
 ENV SSH_JAIL=$SSH_JAIL
 ENV JOB_ENABLE_DKMS=$JOB_ENABLE_DKMS
+ENV KERNEL_FILENAME=$KERNEL_FILENAME
+ENV INITRD_FILENAME=$INITRD_FILENAME
+ENV KERNEL_PARAMETERS_FILENAME=$KERNEL_PARAMETERS_FILENAME
 
 ENTRYPOINT ["/entrypoint.sh"]

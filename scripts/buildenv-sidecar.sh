@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2022, 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2022, 2024-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -153,31 +153,9 @@ setup_user_shell() {
     fi
 }
 
-setup_resolv() {
-    # Copy the container's /etc/resolv.conf to the image root for customization
-    local IMAGE_ROOT_DIR=$1
-    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
-    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
-    if [ -f "$IMAGE_ROOT_RESOLV" -o -L "$IMAGE_ROOT_RESOLV" ]; then
-        mv "$IMAGE_ROOT_RESOLV" "$TMP_RESOLV"
-    fi
-    cp --remove-destination /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
-}
-
-restore_resolv() {
-    # Restore the image root's old /etc/resolv.conf after customization
-    local IMAGE_ROOT_DIR=$1
-    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
-    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
-    rm "$IMAGE_ROOT_RESOLV"
-    if [ -f "$TMP_RESOLV" -o -L "$TMP_RESOLV" ]; then
-        mv "$TMP_RESOLV" "$IMAGE_ROOT_RESOLV"
-    fi
-}
-
 case "$IMS_ACTION" in
     create)
-        if [ -f "$PARAMETER_FILE_BUILD_FAILED" ]; then
+        if [[ -f $PARAMETER_FILE_BUILD_FAILED ]]; then
             if [[ $(echo "$ENABLE_DEBUG" | tr [:upper:] [:lower:]) = "true" ]]; then
                 echo "Running user shell for failed create action"
                 setup_user_shell
@@ -190,18 +168,20 @@ case "$IMS_ACTION" in
         else
             echo "Not running user shell for successful create action"
 
-            # copy ca root key into the image after Kiwi has run
-            copy_ca_root_key "$IMAGE_ROOT_PARENT/build/image-root"
+            # only copy ca root key into the image for local builds, remote builds do the copy on the remote node
+            if [[ -z ${REMOTE_BUILD_NODE} ]]; then
+                copy_ca_root_key "$IMAGE_ROOT_PARENT/build/image-root"
+            fi
 
             # Package the image and send it back to the artifact repository
-            IMAGE_ROOT_DIR=$IMAGE_ROOT_PARENT/build/image-root /scripts/package_and_upload.sh
+            IMAGE_ROOT_DIR="$IMAGE_ROOT_PARENT/build/image-root" /scripts/package_and_upload.sh
             fail_if_error "Packaging and uploading image create artifacts"
             set_job_status "success"
         fi
         ;;
     customize)
         # copy ca root key into the image before user shell if running locally
-        if [[ -z "${REMOTE_BUILD_NODE}" ]]; then
+        if [[ -z ${REMOTE_BUILD_NODE} ]]; then
             copy_ca_root_key "$IMAGE_ROOT_PARENT/image-root"
             setup_resolv "$IMAGE_ROOT_PARENT/image-root"
         fi
@@ -210,16 +190,16 @@ case "$IMS_ACTION" in
         setup_user_shell
         
         # only restore the resolv file if running locally
-        if [[ -z "${REMOTE_BUILD_NODE}" ]]; then
+        if [[ -z ${REMOTE_BUILD_NODE} ]]; then
             restore_resolv "$IMAGE_ROOT_PARENT/image-root"
         fi
 
-        if [ -f "$SIGNAL_FILE_FAILED" ]; then
+        if [[ -f $SIGNAL_FILE_FAILED ]]; then
             echo "Customization of image root marked as failed. A new IMS image will not be created."
             set_job_status "error"
         else
             # Package the image and send it back to the artifact repository
-            IMAGE_ROOT_DIR=$IMAGE_ROOT_PARENT/image-root /scripts/package_and_upload.sh
+            IMAGE_ROOT_DIR="$IMAGE_ROOT_PARENT/image-root" /scripts/package_and_upload.sh
             fail_if_error "Packaging and uploading image customize artifacts"
             set_job_status "success"
         fi
