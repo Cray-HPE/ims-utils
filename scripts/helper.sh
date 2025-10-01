@@ -41,7 +41,7 @@ function fail_if_error() {
 
 function check_image_artifact_exists() {
   local FILE=$1
-  if [[ ! -f "$FILE" ]]; then
+  if [[ ! -f $FILE ]]; then
     echo "Error: Image artifact $FILE does not exist or is not a regular file."
     set_job_status "error"
     exit 1
@@ -53,51 +53,51 @@ function check_image_artifact_exists() {
 function setup_resolv() {
     # Copy the container's /etc/resolv.conf to the image root for customization
     local IMAGE_ROOT_DIR=$1
-    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
-    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
+    local IMAGE_ROOT_RESOLV=${IMAGE_ROOT_DIR}/etc/resolv.conf
+    local TMP_RESOLV=${IMAGE_ROOT_DIR}/tmp/resolv.conf
 
     # Validate input parameter
-    if [ -z "$IMAGE_ROOT_DIR" ] || [ ! -d "$IMAGE_ROOT_DIR" ]; then
-        echo "Error: Invalid or missing image root directory: $IMAGE_ROOT_DIR"
+    if [[ -z $IMAGE_ROOT_DIR || ! -d $IMAGE_ROOT_DIR ]]; then
+        echo "Error: Invalid or missing image root directory: ${IMAGE_ROOT_DIR}"
         return 1
     fi
 
     # Ensure required directories exist
-    if [ ! -d "$IMAGE_ROOT_DIR/etc" ]; then
+    if [[ ! -d $IMAGE_ROOT_DIR/etc ]]; then
         echo "Error: /etc directory not found in image root"
         return 1
     fi
 
-    if [ ! -d "$IMAGE_ROOT_DIR/tmp" ]; then
+    if [[ ! -d $IMAGE_ROOT_DIR/tmp ]]; then
         echo "Creating tmp directory in image root"
-        mkdir -p "$IMAGE_ROOT_DIR/tmp" || {
+        mkdir -p "${IMAGE_ROOT_DIR}/tmp" || {
             echo "Error: Failed to create tmp directory in image root"
             return 1
         }
     fi
 
-    if [ -f "$IMAGE_ROOT_RESOLV" -o -L "$IMAGE_ROOT_RESOLV" ]; then
+    if [[ -f $IMAGE_ROOT_RESOLV || -L $IMAGE_ROOT_RESOLV ]]; then
         mv "$IMAGE_ROOT_RESOLV" "$TMP_RESOLV"
     fi
-    cp -v --remove-destination /etc/resolv.conf "$IMAGE_ROOT_RESOLV"
+    cp -v --remove-destination /etc/resolv.conf "${IMAGE_ROOT_RESOLV}"
 }
 
 # Restore the image root's old /etc/resolv.conf after customization
 function restore_resolv() {
     # Restore the image root's old /etc/resolv.conf after customization
     local IMAGE_ROOT_DIR=$1
-    if [[ ! -d "$IMAGE_ROOT_DIR" ]]; then
-        echo "Error: Invalid or missing image root directory: $IMAGE_ROOT_DIR"
+    if [[ ! -d $IMAGE_ROOT_DIR ]]; then
+        echo "Error: Invalid or missing image root directory: ${IMAGE_ROOT_DIR}"
         return 0
     fi
 
     # Remove the installed resolv.conf
-    local IMAGE_ROOT_RESOLV=$IMAGE_ROOT_DIR/etc/resolv.conf
-    local TMP_RESOLV=$IMAGE_ROOT_DIR/tmp/resolv.conf
-    rm "$IMAGE_ROOT_RESOLV"
+    local IMAGE_ROOT_RESOLV=${IMAGE_ROOT_DIR}/etc/resolv.conf
+    local TMP_RESOLV=${IMAGE_ROOT_DIR}/tmp/resolv.conf
+    rm "${IMAGE_ROOT_RESOLV}"
 
     # Restore the original resolv.conf if it existed
-    if [ -f "$TMP_RESOLV" -o -L "$TMP_RESOLV" ]; then
+    if [[ -f $TMP_RESOLV || -L $TMP_RESOLV ]]; then
         mv "$TMP_RESOLV" "$IMAGE_ROOT_RESOLV"
     fi
 }
@@ -110,15 +110,15 @@ function check_image_dir() {
     local IMAGE_ROOT_DIR=$1
     if [[ -d ${IMAGE_ROOT_DIR}/image ]]; then
       # change read/write permissions of dir to root only
-      chown root ${IMAGE_ROOT_DIR}/image
-      chmod 700 ${IMAGE_ROOT_DIR}/image
+      chown root "${IMAGE_ROOT_DIR}/image"
+      chmod 700 "${IMAGE_ROOT_DIR}/image"
 
       # change files in the dir to root ownership and only rw for root
-      chown root ${IMAGE_ROOT_DIR}/image/*
-      chmod 600 ${IMAGE_ROOT_DIR}/image/*
+      chown root "${IMAGE_ROOT_DIR}/image/*"
+      chmod 600 "${IMAGE_ROOT_DIR}/image/*"
 
       # change the .sh file to rwx for root
-      chmod 700 ${IMAGE_ROOT_DIR}/image/*.sh
+      chmod 700 "${IMAGE_ROOT_DIR}/image/*.sh"
     fi
 }
 
@@ -126,7 +126,7 @@ function check_image_dir() {
 function wait_for_file() {
     # Wait for the user to signal they are done
     echo "Waiting for $1 to be created"
-    until [ -e "$1" ]
+    until [[ -e $1 ]]
     do
       sleep 5;
     done

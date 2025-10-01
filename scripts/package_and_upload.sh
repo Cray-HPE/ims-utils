@@ -67,63 +67,63 @@ set_job_status "packaging_artifacts"
 
 # If the transfer.sqsh file exists from a remote job use it as-is.
 # If this is from a local job, a little more processing is needed.
-if [ -f "$IMAGE_ROOT_PARENT/transfer.sqsh" ]; then
+if [[ -f $IMAGE_ROOT_PARENT/transfer.sqsh ]]; then
   # Rename the transfer.sqsh file to the expected name
   # The assumption is that this was created on a remote node and should be used as-is.
   echo "Found transfer.sqsh file, using it as the image root archive."
-  mv "$IMAGE_ROOT_PARENT/transfer.sqsh" "$IMAGE_ROOT_PARENT/$IMAGE_ROOT_ARCHIVE_NAME.sqsh"
+  mv "${IMAGE_ROOT_PARENT}/transfer.sqsh" "${IMAGE_ROOT_PARENT}/${IMAGE_ROOT_ARCHIVE_NAME}.sqsh"
 
   # The boot files have been copied to the parent dir from the remote node so change
   # the expected location for them. 
   IMAGE_BOOT_DIR=${IMAGE_ROOT_PARENT}
 
   # Check that the kernel and initrd files exist
-  check_image_artifact_exists "$IMAGE_BOOT_DIR/$KERNEL_FILENAME"
-  check_image_artifact_exists "$IMAGE_BOOT_DIR/$INITRD_FILENAME"
+  check_image_artifact_exists "${IMAGE_BOOT_DIR}/${KERNEL_FILENAME}"
+  check_image_artifact_exists "${IMAGE_BOOT_DIR}/${INITRD_FILENAME}"
 else
   # This is a local build, so the entire image-root is available and needs to be
   # processed prior to creating the squashfs file.
 
   # Check that the kernel and initrd files exist
-  check_image_artifact_exists "$IMAGE_BOOT_DIR/$KERNEL_FILENAME"
-  check_image_artifact_exists "$IMAGE_BOOT_DIR/$INITRD_FILENAME"
+  check_image_artifact_exists "${IMAGE_BOOT_DIR}/${KERNEL_FILENAME}"
+  check_image_artifact_exists "${IMAGE_BOOT_DIR}/${INITRD_FILENAME}"
 
   # Change ownership and permissions on /image dir if it exists.
   #  This dir contains config files that may have sensitive information
   #  in them and should only be readable by root.
-  check_image_dir ${IMAGE_ROOT_DIR}
+  check_image_dir "${IMAGE_ROOT_DIR}"
 
   # Make the squashfs formatted archive
-  time mksquashfs "$IMAGE_ROOT_DIR" "$IMAGE_ROOT_PARENT/$IMAGE_ROOT_ARCHIVE_NAME.sqsh"
+  time mksquashfs "${IMAGE_ROOT_DIR}" "${IMAGE_ROOT_PARENT}/${IMAGE_ROOT_ARCHIVE_NAME}.sqsh"
   fail_if_error "Creating squashfs of image root"
 fi
 
 # Check to see if we have a kernel-parameters file. If so, upload the rootfs, initrd, kernel and kernel-parameters file
-if [[ -n "$KERNEL_PARAMETERS_FILENAME" ]]; then
-  if [[ -f "$IMAGE_BOOT_DIR/$KERNEL_PARAMETERS_FILENAME" ]]; then
+if [[ -n ${KERNEL_PARAMETERS_FILENAME} ]]; then
+  if [[ -f ${IMAGE_BOOT_DIR}/${KERNEL_PARAMETERS_FILENAME} ]]; then
     # Upload the artifacts, including the boot parameters file
-    echo "Found /boot/$KERNEL_PARAMETERS_FILENAME."
+    echo "Found /boot/${KERNEL_PARAMETERS_FILENAME}."
     echo "Uploading 4 image artifacts."
-    time python3 -m ims_python_helper image upload_artifacts "$IMAGE_ROOT_ARCHIVE_NAME" "$IMS_JOB_ID" \
-      -t "$IMS_PYTHON_HELPER_TIMEOUT" \
-      -r "$IMAGE_ROOT_PARENT/$IMAGE_ROOT_ARCHIVE_NAME.sqsh" \
-      -k "$IMAGE_BOOT_DIR/$KERNEL_FILENAME" \
-      -i "$IMAGE_BOOT_DIR/$INITRD_FILENAME" \
-      -p "$IMAGE_BOOT_DIR/$KERNEL_PARAMETERS_FILENAME" \
-      --arch "$BUILD_ARCH"
+    time python3 -m ims_python_helper image upload_artifacts "${IMAGE_ROOT_ARCHIVE_NAME}" "${IMS_JOB_ID}" \
+      -t "${IMS_PYTHON_HELPER_TIMEOUT}" \
+      -r "${IMAGE_ROOT_PARENT}/${IMAGE_ROOT_ARCHIVE_NAME}.sqsh" \
+      -k "${IMAGE_BOOT_DIR}/${KERNEL_FILENAME}" \
+      -i "${IMAGE_BOOT_DIR}/${INITRD_FILENAME}" \
+      -p "${IMAGE_BOOT_DIR}/${KERNEL_PARAMETERS_FILENAME}" \
+      --arch "${BUILD_ARCH}"
     fail_if_error "Uploading and registering IMS artifacts"
     exit 0
   fi
-    echo "Did not find /boot/$KERNEL_PARAMETERS_FILENAME"
+    echo "Did not find /boot/${KERNEL_PARAMETERS_FILENAME}"
   fi
 
 # There was no kernel-parameters file found, so just upload the rootfs, initrd and kernel.
 echo "Uploading 3 image artifacts."
-time python3 -m ims_python_helper image upload_artifacts "$IMAGE_ROOT_ARCHIVE_NAME" "$IMS_JOB_ID" \
-  -t "$IMS_PYTHON_HELPER_TIMEOUT" \
-  -r "$IMAGE_ROOT_PARENT/$IMAGE_ROOT_ARCHIVE_NAME.sqsh" \
-  -k "$IMAGE_BOOT_DIR/$KERNEL_FILENAME" \
-  -i "$IMAGE_BOOT_DIR/$INITRD_FILENAME" \
-  --arch "$BUILD_ARCH"
+time python3 -m ims_python_helper image upload_artifacts "${IMAGE_ROOT_ARCHIVE_NAME}" "${IMS_JOB_ID}" \
+  -t "${IMS_PYTHON_HELPER_TIMEOUT}" \
+  -r "${IMAGE_ROOT_PARENT}/${IMAGE_ROOT_ARCHIVE_NAME}.sqsh" \
+  -k "${IMAGE_BOOT_DIR}/${KERNEL_FILENAME}" \
+  -i "${IMAGE_BOOT_DIR}/${INITRD_FILENAME}" \
+  --arch "${BUILD_ARCH}"
 fail_if_error "Uploading and registering IMS artifacts"
 exit 0
