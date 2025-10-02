@@ -36,7 +36,9 @@ IMAGE_ROOT_PARENT=${2:-$IMAGE_ROOT_PARENT} # from env when building from dockerf
 IMAGE_ROOT_DIR=${IMAGE_ROOT_DIR:-${IMAGE_ROOT_PARENT}/image-root}
 
 # set up file locations
+# NOTE: these are in the remote build container's filesystem as signals back to the sshd container
 SIGNAL_FILE_REMOTE_EXITING=${IMAGE_ROOT_PARENT}/remote_exiting
+SIGNAL_FILE_REMOTE_ERROR=${IMAGE_ROOT_PARENT}/remote_error
 
 SSHD_CONFIG_FILE=/etc/cray/ims/sshd_config
 
@@ -70,6 +72,9 @@ if [[ $SSH_JAIL == "True" ]]; then
   USER_SIGNAL_FILE_COMPLETE=${IMAGE_ROOT_DIR}/tmp/complete
   USER_SIGNAL_FILE_FAILED=${IMAGE_ROOT_DIR}/tmp/failed
 fi
+
+# set up trap for termination signals - signal ims pod of error and exit
+trap "echo Trapped Termination Signal; touch ${SIGNAL_FILE_REMOTE_ERROR}; exit 1" SIGTERM SIGINT
 
 # Make Cray's CA certificate a trusted system certificate within the container
 # This will not install the CA certificate into the kiwi image root.
@@ -155,9 +160,6 @@ echo "SetEnv IMS_JOB_ID=${IMS_JOB_ID} IMS_ARCH=${BUILD_ARCH} IMS_DKMS_ENABLED=${
 set +x
 echo off
 echo "Waiting for signal file"
-
-# set up trap for termination signals
-trap "echo TERM; exit 1" SIGTERM SIGINT
 
 # Wait for the user to signal they are done
 until [[ -f ${USER_SIGNAL_FILE_COMPLETE} || -f ${USER_SIGNAL_FILE_FAILED} ]]

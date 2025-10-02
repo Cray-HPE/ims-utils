@@ -34,28 +34,38 @@ REMOTE_PORT=""
 FIRST_REMOTE_PORT="2022"
 
 function find_free_port {
-    # Set up the regex search to pull the port for each running container
-    # NOTE: expect the single column of output to be like: "4e7d19a33b7e	22/tcp -> 0.0.0.0:2024"
-    re="^(.*)0.0.0.0:(.*)$"
+    # Set up the regex search to pull the port for NAT iptable rules.
+    # NOTE: this is safer than querying podman since other applications may be using ports
+    #    or podman may not clean up ports properly.
+    # NOTE: lines with ports expected to be something like (output from iptables):
+    # "0 0 CNI-HOSTPORT-SETMARK  tcp  --  *  *   127.0.0.1  0.0.0.0/0  tcp dpt:2022"
+    # "0 0 DNAT                  tcp  --  *  *   0.0.0.0/0  0.0.0.0/0  tcp dpt:2022 to:10.88.0.15:22"
+    re="^(.*)tcp dpt:([0-9]{4})$"
 
     # get a list of all ports currently in use
     allPorts=()
-    while read i; do 
-        [[ "${i}" =~ $re ]] && var1="${BASH_REMATCH[1]}" && var2="${BASH_REMATCH[2]}"
-        allPorts+=(${var2})
-    done < <(ssh  -o StrictHostKeyChecking=no root@${REMOTE_BUILD_NODE} "podman port -a")
+    while read -r i; do
+        if [[ "${i}" =~ $re && -n ${BASH_REMATCH[1]} && -n ${BASH_REMATCH[2]} ]] ; then
+            allPorts+=(${BASH_REMATCH[2]})
+        fi
+    done < <(ssh  -o StrictHostKeyChecking=no "root@${REMOTE_BUILD_NODE}" "iptables -L -v -n -t nat")
 
-    # sort the ports
-    IFS=$'\n' allPorts=($(sort <<<"${allPorts[*]}")); unset IFS
+    # sort the ports and remove duplicates
+    allPorts=($(printf "%s\n" "${allPorts[@]}" | sort -u))
 
     # Find an available port, starting at FIRST_REMOTE_PORT
-    # NOTE: list is sorted, so first != we can take
+    # NOTE: list is sorted, so first != in our search range we can take
     REMOTE_PORT=${FIRST_REMOTE_PORT}
     for value in "${allPorts[@]}"
     do
-        if (( REMOTE_PORT != value )); then
+        if (( value < FIRST_REMOTE_PORT )); then
+            # ignore ports below our starting point
+            continue
+        elif (( REMOTE_PORT != value )); then
+            # found a gap - use this port
             break
         else
+            # port is in use - try the next one
             (( ++REMOTE_PORT ))
             echo "Port ${value} in use, trying the next: ${REMOTE_PORT}"
         fi
