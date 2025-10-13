@@ -69,6 +69,7 @@ SIGNAL_FILE_EXITING=$IMAGE_ROOT_PARENT/exiting
 SIGNAL_FILE_FAILED=$IMAGE_ROOT_PARENT/failed
 
 PARAMETER_FILE_BUILD_FAILED=$IMAGE_ROOT_PARENT/build_failed
+PARAMETER_FILE_POD_ERROR=$IMAGE_ROOT_PARENT/pod_error
 
 # Make the parent directory where the build environment signal files
 mkdir -p "$IMAGE_ROOT_PARENT"
@@ -194,6 +195,7 @@ case "$IMS_ACTION" in
             restore_resolv "$IMAGE_ROOT_PARENT/image-root"
         fi
 
+        # Only package the image if the user marked it as successful
         if [[ -f $SIGNAL_FILE_FAILED ]]; then
             echo "Customization of image root marked as failed. A new IMS image will not be created."
             set_job_status "error"
@@ -202,6 +204,11 @@ case "$IMS_ACTION" in
             IMAGE_ROOT_DIR="$IMAGE_ROOT_PARENT/image-root" /scripts/package_and_upload.sh
             fail_if_error "Packaging and uploading image customize artifacts"
             set_job_status "success"
+        fi
+
+        # If there was a pod error mark the container as failed
+        if [[ -f $PARAMETER_FILE_POD_ERROR ]]; then
+            exit 1
         fi
         ;;
      *)
